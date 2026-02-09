@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بطاقة Visa الافتراضية - Crynova</title>
+  <title>بطاقة Visa - Crynova</title>
+  
+  <!-- إضافة Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  
+  <!-- إضافة Font Awesome للأيقونات -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
     * {
       margin: 0;
@@ -15,46 +26,68 @@
     :root {
       --primary: #0072ff;
       --secondary: #ff2d9e;
-      --accent: #1a2980;
-      --success: #26a17b;
+      --accent: #7d3dff;
       --danger: #ff4757;
+      --success: #26a17b;
       --warning: #ff9f00;
-      --dark-blue: #1a2980;
-      --light-blue: #26d0ce;
-      --card-gradient: linear-gradient(135deg, #1a2980, #26d0ce);
-      --bg-light: #f8f9fa;
+      --info: #2d87ff;
+      --visa-blue: #1a1f71;
+      --visa-gold: #f0b90b;
+      --visa-platinum: #e5e4e2;
+      --bg-light: #ffffff;
+      --bg-lighter: #f8f9fa;
       --text-dark: #1a1a1a;
       --text-gray: #666;
       --text-light: #888;
       --border-light: rgba(0, 0, 0, 0.1);
+      --shadow-light: rgba(0, 0, 0, 0.08);
+      --shadow-medium: rgba(0, 0, 0, 0.15);
+      --shadow-heavy: rgba(0, 0, 0, 0.25);
     }
 
     body {
-      background: #ffffff;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
       color: var(--text-dark);
       min-height: 100vh;
       padding: 0;
-      padding-bottom: 0;
     }
 
     .visa-page {
-      background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+      padding: 0;
+      background: transparent;
       min-height: 100vh;
+      display: block;
     }
 
-    /* الهيدر */
+    .visa-page.hidden {
+      display: none;
+    }
+
+    .visa-frame {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: transparent;
+      overflow: hidden;
+      position: relative;
+      padding-bottom: 80px;
+    }
+
+    /* ========== رأس صفحة Visa ========== */
     .visa-header {
-      background: linear-gradient(135deg, var(--dark-blue), var(--light-blue));
+      background: linear-gradient(135deg, var(--visa-blue), #2a2f99);
       color: white;
-      padding: 25px 15px 20px;
+      padding: 25px 20px 20px;
       text-align: center;
       position: relative;
       width: 100%;
-      box-shadow: 0 4px 12px rgba(26, 41, 128, 0.3);
+      box-shadow: 0 4px 12px rgba(26, 31, 113, 0.3);
+      border-radius: 0; /* تم تغيير هذا فقط */
+      margin-bottom: 20px;
     }
 
     .visa-header h1 {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: 700;
       margin-bottom: 8px;
       margin-top: 0;
@@ -62,13 +95,13 @@
 
     .visa-header p {
       opacity: 0.9;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       margin-bottom: 0;
     }
 
     .page-close-btn {
       position: absolute;
-      right: 15px;
+      right: 20px;
       top: 50%;
       transform: translateY(-50%);
       background: rgba(255, 255, 255, 0.2);
@@ -91,65 +124,59 @@
       transform: translateY(-50%) scale(1.1);
     }
 
-    .page-content {
-      padding: 15px;
-      max-width: 420px;
-      margin: 0 auto;
-    }
-
-    /* بطاقة Visa الرئيسية */
-    .visa-card-container {
-      margin: 20px 0 30px;
+    /* ========== بطاقة Visa الرئيسية ========== */
+    .main-visa-card {
+      margin: 0 20px 30px;
       perspective: 1000px;
     }
 
-    .visa-card {
-      background: var(--card-gradient);
-      border-radius: 20px;
-      padding: 25px;
-      color: white;
-      box-shadow: 0 10px 30px rgba(26, 41, 128, 0.4);
+    .card-inner {
       position: relative;
-      overflow: hidden;
+      width: 100%;
+      height: 220px;
+      transition: transform 0.8s;
       transform-style: preserve-3d;
-      transition: transform 0.6s ease;
+      cursor: pointer;
     }
 
-    .visa-card:hover {
-      transform: rotateY(5deg) rotateX(2deg);
+    .card-inner.flipped {
+      transform: rotateY(180deg);
     }
 
-    .visa-card::before {
-      content: '';
+    .card-front, .card-back {
       position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 1%, transparent 1%);
-      background-size: 15px 15px;
-      opacity: 0.3;
-      transform: rotate(30deg);
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px var(--shadow-heavy);
     }
 
-    .card-header {
+    .card-front {
+      background: linear-gradient(135deg, #1a1f71, #3a3fb3);
+      color: white;
+      padding: 25px;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
     }
 
-    .card-logo {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 1px;
+    .card-back {
+      background: linear-gradient(135deg, #3a3fb3, #1a1f71);
+      color: white;
+      transform: rotateY(180deg);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
     }
 
     .card-chip {
       width: 50px;
       height: 40px;
-      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      background: linear-gradient(135deg, #f0b90b, #ffd700);
       border-radius: 8px;
+      margin-bottom: 20px;
       position: relative;
       overflow: hidden;
     }
@@ -161,712 +188,823 @@
       left: 5px;
       right: 5px;
       bottom: 5px;
-      border: 1px solid rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.1);
       border-radius: 4px;
     }
 
-    .card-number {
-      font-size: 22px;
-      letter-spacing: 3px;
-      text-align: center;
-      margin: 25px 0;
-      font-family: 'Courier New', monospace;
+    .card-logo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .visa-logo {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-type {
+      font-size: 1.2rem;
       font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .card-number {
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+      font-family: 'Courier New', monospace;
     }
 
     .card-details {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      margin-top: 30px;
-    }
-
-    .card-holder {
-      flex: 1;
-    }
-
-    .card-holder-label {
-      font-size: 10px;
-      opacity: 0.8;
-      margin-bottom: 5px;
-    }
-
-    .card-holder-name {
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 1px;
-    }
-
-    .card-expiry {
-      text-align: right;
-    }
-
-    .card-expiry-label {
-      font-size: 10px;
-      opacity: 0.8;
-      margin-bottom: 5px;
-    }
-
-    .card-expiry-date {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .card-type {
-      position: absolute;
-      bottom: 25px;
-      right: 25px;
-      font-size: 24px;
-      font-weight: 700;
-      opacity: 0.9;
-    }
-
-    /* معلومات الرصيد */
-    .balance-stats {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 16px var(--border-light);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .balance-header {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
     }
 
-    .balance-title {
-      font-size: 14px;
-      color: var(--text-gray);
-      font-weight: 600;
-    }
-
-    .balance-amount {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text-dark);
-      text-align: center;
-      margin: 10px 0;
-      background: linear-gradient(135deg, var(--dark-blue), var(--light-blue));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .balance-subtitle {
-      text-align: center;
-      color: var(--text-light);
-      font-size: 12px;
-      margin-bottom: 0px;
-    }
-
-    /* أزرار التحكم */
-    .control-buttons {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: 25px 0;
-    }
-
-    .control-btn {
-      padding: 16px 12px;
-      border-radius: 12px;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
+    .card-holder, .card-expiry {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: white;
-      border: 1px solid var(--border-light);
-      color: var(--text-dark);
     }
 
-    .control-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-color: var(--primary);
-    }
-
-    .control-btn.primary {
-      background: linear-gradient(135deg, var(--dark-blue), var(--light-blue));
-      color: white;
-      border: none;
-      box-shadow: 0 4px 12px rgba(26, 41, 128, 0.2);
-    }
-
-    .btn-icon {
-      font-size: 20px;
-    }
-
-    .btn-text {
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    /* قسم المعاملات */
-    .transactions-section {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 20px;
-      box-shadow: 0 4px 16px var(--border-light);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .view-all {
-      font-size: 12px;
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .transactions-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .transaction-item {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      border-radius: 12px;
-      background: var(--bg-light);
-      border: 1px solid transparent;
-      transition: all 0.3s ease;
-    }
-
-    .transaction-item:hover {
-      background: white;
-      border-color: var(--border-light);
-      transform: translateX(-2px);
-    }
-
-    .transaction-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      margin-left: 12px;
-      flex-shrink: 0;
-    }
-
-    .transaction-icon.shopping {
-      background: rgba(255, 154, 0, 0.1);
-      color: #ff9a00;
-    }
-
-    .transaction-icon.food {
-      background: rgba(38, 161, 123, 0.1);
-      color: var(--success);
-    }
-
-    .transaction-icon.transport {
-      background: rgba(0, 114, 255, 0.1);
-      color: var(--primary);
-    }
-
-    .transaction-icon.entertainment {
-      background: rgba(125, 61, 255, 0.1);
-      color: #7d3dff;
-    }
-
-    .transaction-details {
-      flex: 1;
-    }
-
-    .transaction-name {
-      font-weight: 600;
-      color: var(--text-dark);
-      font-size: 14px;
+    .card-label {
+      font-size: 0.75rem;
+      opacity: 0.8;
       margin-bottom: 4px;
     }
 
-    .transaction-date {
-      font-size: 11px;
-      color: var(--text-light);
-    }
-
-    .transaction-amount {
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .transaction-amount.positive {
-      color: var(--success);
-    }
-
-    .transaction-amount.negative {
-      color: var(--danger);
-    }
-
-    /* معلومات البطاقة */
-    .card-info-section {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 20px;
-      box-shadow: 0 4px 16px var(--border-light);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin-top: 15px;
-    }
-
-    .info-item {
-      padding: 12px;
-      background: var(--bg-light);
-      border-radius: 12px;
-      border: 1px solid var(--border-light);
-    }
-
-    .info-label {
-      font-size: 11px;
-      color: var(--text-light);
-      margin-bottom: 5px;
-    }
-
-    .info-value {
+    .card-value {
+      font-size: 1.1rem;
       font-weight: 600;
-      color: var(--text-dark);
-      font-size: 14px;
-      font-family: 'Courier New', monospace;
     }
 
-    .cvv-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .card-back .magnetic-stripe {
+      height: 40px;
+      background: #222;
+      width: 100%;
+      margin-bottom: 20px;
+      border-radius: 4px;
     }
 
-    .show-cvv-btn {
-      background: rgba(0, 114, 255, 0.1);
-      border: 1px solid rgba(0, 114, 255, 0.2);
-      color: var(--primary);
+    .card-back .cvv-section {
+      background: white;
+      color: #222;
+      padding: 10px;
       border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .show-cvv-btn:hover {
-      background: rgba(0, 114, 255, 0.2);
-    }
-
-    /* فاصل */
-    .divider {
-      height: 1px;
-      background: var(--border-light);
-      margin: 25px 0;
-      opacity: 0.5;
-    }
-
-    /* الحالة */
-    .card-status {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 15px;
-      background: var(--bg-light);
-      border-radius: 12px;
+      align-items: center;
       margin-bottom: 20px;
     }
 
-    .status-indicator {
+    .card-back .cvv-label {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .card-back .cvv-number {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .card-back .notice {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* ========== إجراءات سريعة ========== */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin: 0 20px 30px;
+    }
+
+    .action-item {
+      background: white;
+      border-radius: 16px;
+      padding: 15px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px var(--shadow-light);
+      border: 1px solid transparent;
+    }
+
+    .action-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px var(--shadow-medium);
+      border-color: var(--visa-blue);
+    }
+
+    .action-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: white;
     }
 
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--success);
+    .action-icon.freeze {
+      background: linear-gradient(135deg, var(--warning), #ffb347);
     }
 
-    .status-dot.active {
-      background: var(--success);
+    .action-icon.transactions {
+      background: linear-gradient(135deg, var(--info), #4dabf7);
     }
 
-    .status-dot.frozen {
-      background: var(--danger);
-    }
-
-    .status-text {
+    .action-text {
+      font-size: 0.8rem;
       font-weight: 600;
-      font-size: 14px;
-    }
-
-    .toggle-status-btn {
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border-light);
-      background: white;
       color: var(--text-dark);
-      font-size: 12px;
+      text-align: center;
+    }
+
+    /* ========== تفاصيل البطاقة ========== */
+    .card-details-section {
+      background: white;
+      border-radius: 20px;
+      margin: 0 20px 30px;
+      padding: 25px;
+      box-shadow: 0 4px 15px var(--shadow-light);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title i {
+      color: var(--visa-blue);
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-size: 0.95rem;
+      color: var(--text-gray);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .detail-value {
+      font-size: 1rem;
       font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .detail-value.positive {
+      color: var(--success);
+    }
+
+    .detail-value.warning {
+      color: var(--warning);
+    }
+
+    /* ========== بطاقات إضافية ========== */
+    .additional-cards {
+      margin: 0 20px 30px;
+    }
+
+    .cards-slider {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 10px 5px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--visa-blue) transparent;
+    }
+
+    .cards-slider::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .cards-slider::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .cards-slider::-webkit-scrollbar-thumb {
+      background-color: var(--visa-blue);
+      border-radius: 20px;
+    }
+
+    .additional-card {
+      min-width: 200px;
+      height: 130px;
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 5px 15px var(--shadow-medium);
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    .toggle-status-btn:hover {
-      background: #f8f9fa;
+    .additional-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px var(--shadow-heavy);
     }
 
-    /* التذييل */
-    .visa-footer {
-      text-align: center;
-      padding: 20px 0;
-      color: var(--text-light);
-      font-size: 11px;
-      opacity: 0.7;
+    .additional-card.gold {
+      background: linear-gradient(135deg, #f0b90b, #ffd700);
+      color: #333;
     }
 
-    /* تأثيرات */
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(26, 41, 128, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(26, 41, 128, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(26, 41, 128, 0); }
+    .additional-card.platinum {
+      background: linear-gradient(135deg, #e5e4e2, #ffffff);
+      color: #333;
     }
 
-    .pulse-animation {
-      animation: pulse 2s infinite;
+    .additional-card.virtual {
+      background: linear-gradient(135deg, #26a17b, #2dcc9e);
+      color: white;
     }
 
-    /* تجاوبية */
+    .card-mini-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-mini-type {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .card-mini-logo {
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    .card-mini-number {
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ========== أزرار الإجراءات ========== */
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin: 0 20px 30px;
+    }
+
+    .visa-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .visa-btn.primary {
+      background: linear-gradient(135deg, var(--visa-blue), #3a3fb3);
+      color: white;
+      box-shadow: 0 5px 15px rgba(26, 31, 113, 0.3);
+    }
+
+    .visa-btn.primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(26, 31, 113, 0.4);
+    }
+
+    .visa-btn.secondary {
+      background: white;
+      color: var(--visa-blue);
+      border: 2px solid var(--visa-blue);
+      box-shadow: 0 4px 12px var(--shadow-light);
+    }
+
+    .visa-btn.secondary:hover {
+      background: var(--visa-blue);
+      color: white;
+      transform: translateY(-3px);
+    }
+
+    /* ========== معلومات إضافية ========== */
+    .additional-info {
+      background: white;
+      border-radius: 20px;
+      margin: 0 20px;
+      padding: 25px;
+      box-shadow: 0 4px 15px var(--shadow-light);
+    }
+
+    .info-item {
+      margin-bottom: 20px;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-title {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-text {
+      color: var(--text-gray);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* ========== تجاوبية للشاشات الصغيرة ========== */
     @media (max-width: 480px) {
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
       .card-number {
-        font-size: 18px;
+        font-size: 1.3rem;
         letter-spacing: 2px;
       }
       
-      .control-buttons {
-        grid-template-columns: 1fr;
+      .additional-card {
+        min-width: 180px;
+        height: 120px;
       }
-      
-      .info-grid {
-        grid-template-columns: 1fr;
+    }
+
+    /* ========== تأثيرات الحركة ========== */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
       }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* ========== تأثيرات البطاقة ========== */
+    .card-shine {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 70%
+      );
+      transform: translateX(-100%);
+    }
+
+    .card-inner:hover .card-shine {
+      transform: translateX(100%);
+      transition: transform 1s ease;
+    }
+
+    /* ========== شريط التحميل ========== */
+    .loading-spinner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(26, 31, 113, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--visa-blue);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ========== رسائل التنبيه ========== */
+    .visa-toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--success);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      z-index: 10000;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 90%;
+      text-align: center;
+      animation: slideDown 0.3s ease;
+    }
+
+    .visa-toast.error {
+      background: var(--danger);
+    }
+
+    .visa-toast.warning {
+      background: var(--warning);
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* ========== تذييل الصفحة ========== */
+    .visa-footer {
+      text-align: center;
+      padding: 30px 20px 20px;
+      color: var(--text-light);
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .security-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--success);
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <!-- صفحة بطاقة Visa -->
-  <div class="visa-page">
-    <!-- الهيدر -->
-    <div class="visa-header">
-      <button class="page-close-btn" id="closeBtn">&times;</button>
-      <h1>بطاقة Visa الافتراضية</h1>
-      <p>دفعات آمنة في كل مكان</p>
-    </div>
-
-    <!-- محتوى الصفحة -->
-    <div class="page-content">
-      <!-- حالة البطاقة -->
-      <div class="card-status">
-        <div class="status-indicator">
-          <div class="status-dot active"></div>
-          <span class="status-text">البطاقة نشطة</span>
-        </div>
-        <button class="toggle-status-btn" id="toggleStatusBtn">تجميد البطاقة</button>
+  <!-- صفحة Visa المستقلة -->
+  <div class="visa-page" id="visaPage">
+    <div class="visa-frame">
+      <!-- رأس الصفحة -->
+      <div class="visa-header">
+        <button class="page-close-btn" id="visaBackBtn">&times;</button>
+        <h1>بطاقة Visa</h1>
+        <p>بطاقتك الذكية للدفع حول العالم</p>
       </div>
 
       <!-- بطاقة Visa الرئيسية -->
-      <div class="visa-card-container">
-        <div class="visa-card pulse-animation">
-          <div class="card-header">
-            <div class="card-logo">VISA</div>
+      <div class="main-visa-card">
+        <div class="card-inner" id="cardFlip">
+          <!-- وجه البطاقة -->
+          <div class="card-front">
             <div class="card-chip"></div>
-          </div>
-          <div class="card-number">**** **** **** 4859</div>
-          <div class="card-details">
-            <div class="card-holder">
-              <div class="card-holder-label">حامل البطاقة</div>
-              <div class="card-holder-name">AKRAM KHEZZARI</div>
+            <div class="card-logo">
+              <div class="visa-logo">VISA</div>
+              <div class="card-type">PLATINUM</div>
             </div>
-            <div class="card-expiry">
-              <div class="card-expiry-label">صالحة حتى</div>
-              <div class="card-expiry-date">05/28</div>
+            <div class="card-number" id="cardNumber">**** **** **** 4592</div>
+            <div class="card-details">
+              <div class="card-holder">
+                <div class="card-label">حامل البطاقة</div>
+                <div class="card-value" id="cardHolder">AKRAM KHEZZARI</div>
+              </div>
+              <div class="card-expiry">
+                <div class="card-label">صالحة حتى</div>
+                <div class="card-value" id="cardExpiry">08/27</div>
+              </div>
+            </div>
+            <div class="card-shine"></div>
+          </div>
+          
+          <!-- ظهر البطاقة -->
+          <div class="card-back">
+            <div class="magnetic-stripe"></div>
+            <div class="cvv-section">
+              <div class="cvv-label">رمز الأمان (CVV)</div>
+              <div class="cvv-number" id="cardCvv">328</div>
+            </div>
+            <div class="notice">
+              توقيع حامل البطاقة مطلوب. غير صالحة ما لم تكن موقعة.
             </div>
           </div>
-          <div class="card-type">افتراضية</div>
         </div>
       </div>
 
-      <!-- معلومات الرصيد -->
-      <div class="balance-stats">
-        <div class="balance-header">
-          <div class="balance-title">الرصيد المتاح</div>
-          <div class="balance-title">حد الإنفاق: $5,000</div>
+      <!-- إجراءات سريعة -->
+      <div class="quick-actions">
+        <div class="action-item" id="freezeCard">
+          <div class="action-icon freeze">
+            <i class="fas fa-snowflake"></i>
+          </div>
+          <div class="action-text">تجميد البطاقة</div>
         </div>
-        <div class="balance-amount">$2,845.60</div>
-        <div class="balance-subtitle">ما يعادل ≈ 10,245.65 SAR</div>
-      </div>
-
-      <!-- أزرار التحكم -->
-      <div class="control-buttons">
         
-      </div>
-
-      <!-- معلومات البطاقة -->
-      <div class="card-info-section">
-        <div class="section-title">معلومات البطاقة</div>
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-label">رقم البطاقة</div>
-            <div class="info-value">4859 8765 4321 0123</div>
+        <div class="action-item" id="viewTransactions">
+          <div class="action-icon transactions">
+            <i class="fas fa-exchange-alt"></i>
           </div>
-          <div class="info-item">
-            <div class="info-label">تاريخ الانتهاء</div>
-            <div class="info-value">05/2028</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">رمز CVV</div>
-            <div class="info-value cvv-container">
-              <span id="cvvValue">•••</span>
-              <button class="show-cvv-btn" id="showCvvBtn">إظهار</button>
-            </div>
-          </div>
-          <!-- تم إزالة عنصر الرمز البريدي هنا -->
+          <div class="action-text">المعاملات</div>
         </div>
       </div>
 
-      <!-- المعاملات الحديثة -->
-      <div class="transactions-section">
+      <!-- تفاصيل البطاقة -->
+      <div class="card-details-section fade-in">
         <div class="section-title">
-          <span>المعاملات الحديثة</span>
-          <a href="#" class="view-all">عرض الكل</a>
+          <i class="fas fa-info-circle"></i>
+          تفاصيل البطاقة
         </div>
-        <div class="transactions-list">
-          <!-- معاملة 1 -->
-          <div class="transaction-item">
-            <div class="transaction-icon shopping">🛍️</div>
-            <div class="transaction-details">
-              <div class="transaction-name">Amazon.com</div>
-              <div class="transaction-date">اليوم، 14:30</div>
-            </div>
-            <div class="transaction-amount negative">-$89.99</div>
+        
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-wallet"></i>
+            الرصيد المتاح
           </div>
-          
-          <!-- معاملة 2 -->
-          <div class="transaction-item">
-            <div class="transaction-icon food">🍕</div>
-            <div class="transaction-details">
-              <div class="transaction-name">مطعم بيتزا هت</div>
-              <div class="transaction-date">أمس، 19:15</div>
-            </div>
-            <div class="transaction-amount negative">-$34.50</div>
+          <div class="detail-value positive" id="cardBalance">$1,245.75</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-credit-card"></i>
+            نوع البطاقة
           </div>
-          
-          <!-- معاملة 3 -->
-          <div class="transaction-item">
-            <div class="transaction-icon transport">🚕</div>
-            <div class="transaction-details">
-              <div class="transaction-name">Uber Ride</div>
-              <div class="transaction-date">أمس، 10:20</div>
-            </div>
-            <div class="transaction-amount negative">-$18.75</div>
+          <div class="detail-value">Visa Platinum</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-calendar-alt"></i>
+            تاريخ الإصدار
           </div>
-          
-          <!-- معاملة 4 -->
-          <div class="transaction-item">
-            <div class="transaction-icon entertainment">🎬</div>
-            <div class="transaction-details">
-              <div class="transaction-name">Netflix</div>
-              <div class="transaction-date">15 مايو</div>
-            </div>
-            <div class="transaction-amount negative">-$12.99</div>
+          <div class="detail-value">08/2023</div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-label">
+            <i class="fas fa-globe"></i>
+            الحالة
           </div>
-          
-          <!-- معاملة 5 (إيداع) -->
-          <div class="transaction-item">
-            <div class="transaction-icon" style="background: rgba(38, 161, 123, 0.1); color: var(--success);">💰</div>
-            <div class="transaction-details">
-              <div class="transaction-name">شحن رصيد</div>
-              <div class="transaction-date">14 مايو</div>
-            </div>
-            <div class="transaction-amount positive">+$500.00</div>
+          <div class="detail-value positive">
+            <i class="fas fa-check-circle"></i> نشطة
           </div>
         </div>
       </div>
 
-      <!-- فاصل -->
-      <div class="divider"></div>
+      <!-- بطاقات إضافية -->
+      <div class="additional-cards fade-in">
+        <div class="section-title">
+          <i class="fas fa-id-card"></i>
+          بطاقاتك الأخرى
+        </div>
+        
+        <div class="cards-slider">
+          <div class="additional-card gold">
+            <div class="card-mini-header">
+              <div class="card-mini-type">Gold</div>
+              <div class="card-mini-logo">VISA</div>
+            </div>
+            <div class="card-mini-number">**** 3821</div>
+            <div class="card-mini-balance">$850.00</div>
+          </div>
+          
+          <div class="additional-card virtual">
+            <div class="card-mini-header">
+              <div class="card-mini-type">Virtual</div>
+              <div class="card-mini-logo">VISA</div>
+            </div>
+            <div class="card-mini-number">**** 7743</div>
+            <div class="card-mini-balance">$250.00</div>
+          </div>
+          
+          <div class="additional-card platinum">
+            <div class="card-mini-header">
+              <div class="card-mini-type">Platinum</div>
+              <div class="card-mini-logo">VISA</div>
+            </div>
+            <div class="card-mini-number">**** 5698</div>
+            <div class="card-mini-balance">$2,150.00</div>
+          </div>
+        </div>
+      </div>
 
-      <!-- التذييل -->
+      <!-- أزرار الإجراءات -->
+      <div class="action-buttons fade-in">
+        <button class="visa-btn primary" id="requestNewCard">
+          <i class="fas fa-plus-circle"></i>
+          طلب بطاقة جديدة
+        </button>
+        
+        <button class="visa-btn secondary" id="manageLimits">
+          <i class="fas fa-sliders-h"></i>
+          إدارة الحدود
+        </button>
+      </div>
+
+      <!-- معلومات إضافية -->
+      <div class="additional-info fade-in">
+        <div class="info-item">
+          <div class="info-title">
+            <i class="fas fa-shield-alt"></i>
+            الأمان والحماية
+          </div>
+          <div class="info-text">
+            بطاقتك مؤمنة بتقنية الحماية من الاحتيال مع رقابة على مدار الساعة. 
+            يمكنك تجميد البطاقة فوراً في حالة فقدانها أو سرقتها.
+          </div>
+        </div>
+        
+        <div class="info-item">
+          <div class="info-title">
+            <i class="fas fa-headset"></i>
+            الدعم الفني
+          </div>
+          <div class="info-text">
+            خدمة العملاء متاحة 24/7 لدعمك في أي استفسار أو مشكلة.
+            اتصل بنا على الرقم الموحد: 9200 1234 966+
+          </div>
+        </div>
+      </div>
+
+      <!-- تذييل الصفحة -->
       <div class="visa-footer">
-        Crynova Visa Card • مدعومة بـ Crynova Pay<br>
-        <span style="font-size: 10px;">جميع المعاملات مؤمنة ومشفرة</span>
+        Crynova Visa • الدفع الذكي حول العالم
+        <div class="security-note">
+          <i class="fas fa-lock"></i>
+          جميع معاملاتك مؤمنة ومشفرة
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- شاشة التحميل -->
+  <div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner"></div>
+  </div>
+
   <script>
-    // بيانات البطاقة (تمت إزالة zipCode من البيانات)
-    const cardData = {
-      cardNumber: "4859 8765 4321 0123",
-      cardHolder: "AKRAM KHEZZARI",
-      expiryDate: "05/2028",
-      cvv: "123",
-      balance: 2845.60,
-      monthlySpent: 1240,
-      transactionsCount: 43,
-      spendingLimit: 5000,
-      isActive: true
+    // ========== بيانات التطبيق ==========
+    let currentUser = {
+      id: null,
+      firstName: 'Akram',
+      lastName: 'Khezzari',
+      username: null
     };
 
-    // تهيئة الصفحة
+    // بيانات بطاقة Visa
+    let visaCard = {
+      id: 'visa_001',
+      number: '4592 8732 6451 4592',
+      holder: 'AKRAM KHEZZARI',
+      expiry: '08/27',
+      cvv: '328',
+      balance: 1245.75,
+      type: 'PLATINUM',
+      status: 'active'
+    };
+
+    // ========== تهيئة الصفحة ==========
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 Visa Card Interface Loaded');
+      console.log('🚀 تهيئة صفحة Visa...');
       
-      // تحديث بيانات البطاقة
-      updateCardData();
+      // تهيئة بيانات المستخدم
+      initializeUserData();
+      
+      // تهيئة واجهة البطاقة
+      initializeCard();
       
       // إعداد الأحداث
       setupEventListeners();
+      
+      // عرض رسالة ترحيبية
+      setTimeout(() => {
+        showToast('مرحباً بك في خدمة Visa من Crynova!', 'success');
+      }, 1000);
     });
 
-    // تحديث بيانات البطاقة
-    function updateCardData() {
-      // تحديث الرصيد
-      document.querySelector('.balance-amount').textContent = `$${cardData.balance.toFixed(2)}`;
-      
-      // تحديث حالة البطاقة
-      updateCardStatus();
-    }
-
-    // تحديث حالة البطاقة
-    function updateCardStatus() {
-      const statusDot = document.querySelector('.status-dot');
-      const statusText = document.querySelector('.status-text');
-      const toggleBtn = document.getElementById('toggleStatusBtn');
-      const visaCard = document.querySelector('.visa-card');
-      
-      if (cardData.isActive) {
-        statusDot.className = 'status-dot active';
-        statusText.textContent = 'البطاقة نشطة';
-        toggleBtn.textContent = 'تجميد البطاقة';
-        visaCard.classList.add('pulse-animation');
-      } else {
-        statusDot.className = 'status-dot frozen';
-        statusText.textContent = 'البطاقة مجمدة';
-        toggleBtn.textContent = 'تفعيل البطاقة';
-        visaCard.classList.remove('pulse-animation');
+    // ========== تهيئة بيانات المستخدم ==========
+    function initializeUserData() {
+      // محاولة الحصول على بيانات المستخدم من Telegram WebApp
+      try {
+        if (window.Telegram && Telegram.WebApp) {
+          const tg = Telegram.WebApp;
+          const user = tg.initDataUnsafe.user;
+          
+          if (user && user.id) {
+            currentUser.id = user.id;
+            currentUser.firstName = user.first_name || currentUser.firstName;
+            currentUser.lastName = user.last_name || currentUser.lastName;
+            currentUser.username = user.username || null;
+            
+            // تحديث اسم حامل البطاقة
+            const cardHolderName = `${currentUser.firstName.toUpperCase()} ${currentUser.lastName.toUpperCase()}`;
+            visaCard.holder = cardHolderName;
+            
+            document.getElementById('cardHolder').textContent = cardHolderName;
+          }
+        }
+      } catch (error) {
+        console.log('❌ Telegram WebApp غير متوفر، استخدام بيانات تجريبية');
       }
     }
 
-    // إعداد مستمعي الأحداث
-    function setupEventListeners() {
-      // زر الإغلاق
-      document.getElementById('closeBtn').addEventListener('click', function() {
-        alert('العودة للصفحة الرئيسية');
-        // هنا يمكن إضافة كود للعودة للصفحة الرئيسية
-      });
-      
-      // زر تبديل الحالة
-      document.getElementById('toggleStatusBtn').addEventListener('click', function() {
-        cardData.isActive = !cardData.isActive;
-        updateCardStatus();
-        
-        const message = cardData.isActive 
-          ? '✅ تم تفعيل البطاقة بنجاح' 
-          : '❄️ تم تجميد البطاقة بنجاح';
-        
-        showToast(message, cardData.isActive ? 'success' : 'warning');
-      });
-      
-      // زر إظهار/إخفاء CVV
-      document.getElementById('showCvvBtn').addEventListener('click', function() {
-        const cvvValue = document.getElementById('cvvValue');
-        const btn = document.getElementById('showCvvBtn');
-        
-        if (cvvValue.textContent === '•••') {
-          cvvValue.textContent = cardData.cvv;
-          btn.textContent = 'إخفاء';
-          
-          // إخفاء CVV تلقائياً بعد 5 ثواني
-          setTimeout(() => {
-            if (cvvValue.textContent !== '•••') {
-              cvvValue.textContent = '•••';
-              btn.textContent = 'إظهار';
-            }
-          }, 5000);
-        } else {
-          cvvValue.textContent = '•••';
-          btn.textContent = 'إظهار';
-        }
-      });
-      
-      // تأثير التدوير للبطاقة
-      const visaCard = document.querySelector('.visa-card');
-      visaCard.addEventListener('click', function() {
-        this.style.transform = 'rotateY(180deg)';
-        
-        setTimeout(() => {
-          this.style.transform = 'rotateY(0deg)';
-        }, 1000);
-      });
+    // ========== تهيئة واجهة البطاقة ==========
+    function initializeCard() {
+      // تحديث بيانات البطاقة في الواجهة
+      document.getElementById('cardNumber').textContent = formatCardNumber(visaCard.number);
+      document.getElementById('cardHolder').textContent = visaCard.holder;
+      document.getElementById('cardExpiry').textContent = visaCard.expiry;
+      document.getElementById('cardCvv').textContent = visaCard.cvv;
+      document.getElementById('cardBalance').textContent = `$${visaCard.balance.toFixed(2)}`;
     }
 
-    // دالة لعرض الإشعارات
+    // ========== إعداد الأحداث ==========
+    function setupEventListeners() {
+      // زر العودة
+      document.getElementById('visaBackBtn').addEventListener('click', goBack);
+      
+      // قلب البطاقة عند النقر
+      document.getElementById('cardFlip').addEventListener('click', flipCard);
+      
+      // إجراءات سريعة
+      document.getElementById('freezeCard').addEventListener('click', toggleFreezeCard);
+      document.getElementById('viewTransactions').addEventListener('click', viewAllTransactions);
+      
+      // أزرار الإجراءات
+      document.getElementById('requestNewCard').addEventListener('click', requestNewCard);
+      document.getElementById('manageLimits').addEventListener('click', manageLimits);
+    }
+
+    // ========== دوال المساعدة ==========
+    function formatCardNumber(number) {
+      // إظهار الأرقام الأربعة الأخيرة فقط
+      const lastFour = number.slice(-4);
+      return `**** **** **** ${lastFour}`;
+    }
+
     function showToast(message, type = 'info') {
-      // إزالة أي إشعارات سابقة
       const existingToasts = document.querySelectorAll('.visa-toast');
       existingToasts.forEach(toast => toast.remove());
       
-      // إنشاء الإشعار الجديد
       const toast = document.createElement('div');
-      toast.className = `visa-toast ${type}`;
+      toast.className = `visa-toast ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : ''}`;
       toast.textContent = message;
-      toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${type === 'success' ? '#26a17b' : 
-                    type === 'error' ? '#ff4757' : 
-                    type === 'warning' ? '#ff9f00' : '#1a2980'};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 10px;
-        z-index: 10000;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        max-width: 90%;
-        text-align: center;
-        animation: slideDown 0.3s ease;
-      `;
       
       document.body.appendChild(toast);
       
-      // إخفاء الإشعار بعد 3 ثواني
       setTimeout(() => {
         if (toast.parentNode) {
           toast.style.opacity = '0';
@@ -880,21 +1018,113 @@
       }, 3000);
     }
 
-    // إضافة أنميشن للإشعارات
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideDown {
-        from {
-          transform: translateX(-50%) translateY(-20px);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(-50%) translateY(0);
-          opacity: 1;
-        }
+    function showLoading(show) {
+      const spinner = document.getElementById('loadingSpinner');
+      if (spinner) {
+        spinner.style.display = show ? 'flex' : 'none';
       }
-    `;
-    document.head.appendChild(style);
+    }
+
+    // ========== دوال التفاعل مع البطاقة ==========
+    function flipCard() {
+      const cardInner = document.getElementById('cardFlip');
+      cardInner.classList.toggle('flipped');
+    }
+
+    function toggleFreezeCard() {
+      const freezeBtn = document.getElementById('freezeCard');
+      const icon = freezeBtn.querySelector('.action-icon');
+      const text = freezeBtn.querySelector('.action-text');
+      
+      if (visaCard.status === 'active') {
+        visaCard.status = 'frozen';
+        icon.style.background = 'linear-gradient(135deg, var(--danger), #ff6b81)';
+        icon.innerHTML = '<i class="fas fa-ban"></i>';
+        text.textContent = 'إلغاء التجميد';
+        
+        showToast('تم تجميد البطاقة بنجاح', 'warning');
+      } else {
+        visaCard.status = 'active';
+        icon.style.background = 'linear-gradient(135deg, var(--warning), #ffb347)';
+        icon.innerHTML = '<i class="fas fa-snowflake"></i>';
+        text.textContent = 'تجميد البطاقة';
+        
+        showToast('تم إلغاء تجميد البطاقة', 'success');
+      }
+    }
+
+    function viewAllTransactions() {
+      showLoading(true);
+      
+      // محاكاة تحميل جميع المعاملات
+      setTimeout(() => {
+        showLoading(false);
+        showToast('جارٍ تحميل جميع المعاملات...', 'info');
+      }, 1000);
+    }
+
+    function requestNewCard() {
+      showLoading(true);
+      
+      // محاكاة طلب بطاقة جديدة
+      setTimeout(() => {
+        showLoading(false);
+        
+        const cardTypes = ['Gold', 'Platinum', 'Virtual'];
+        const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+        
+        showToast(`تم تقديم طلب لبطاقة ${randomType} جديدة بنجاح!`, 'success');
+      }, 2000);
+    }
+
+    function manageLimits() {
+      showToast('فتح صفحة إدارة حدود الإنفاق...', 'info');
+    }
+
+    function goBack() {
+      // في حالة كون الصفحة جزءاً من تطبيق أكبر
+      if (typeof showMainPage !== 'undefined') {
+        showMainPage();
+      } else {
+        // في حالة الصفحة المستقلة، إعادة تحميل أو إغلاق
+        window.history.back();
+      }
+    }
+
+    // ========== تهيئة إضافية عند التمرير ==========
+    window.addEventListener('scroll', function() {
+      const fadeElements = document.querySelectorAll('.fade-in');
+      
+      fadeElements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+        
+        if (elementTop < window.innerHeight - elementVisible) {
+          element.style.opacity = "1";
+          element.style.transform = "translateY(0)";
+        }
+      });
+    });
+
+    // ========== تهيئة تأثيرات التلاشي ==========
+    document.querySelectorAll('.fade-in').forEach(element => {
+      element.style.opacity = "0";
+      element.style.transform = "translateY(20px)";
+      element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+    });
+
+    // تشغيل تأثير التلاشي بعد تحميل الصفحة
+    setTimeout(() => {
+      document.querySelectorAll('.fade-in').forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+        
+        if (elementTop < window.innerHeight - elementVisible) {
+          element.style.opacity = "1";
+          element.style.transform = "translateY(0)";
+        }
+      });
+    }, 300);
   </script>
 </body>
 </html>
