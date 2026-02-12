@@ -8,7 +8,7 @@
   <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
-  <!-- Firebase SDK (غير مستخدم حالياً) -->
+  <!-- Firebase SDK (نسخة التوافق) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   
@@ -66,10 +66,9 @@
       background: transparent;
       overflow: hidden;
       position: relative;
-      padding-bottom: 80px;
+      padding-bottom: 20px; /* تقليل المسافة السفلية */
     }
 
-    /* ========== رأس الصفحة ========== */
     .visa-header {
       background: linear-gradient(135deg, var(--visa-blue), #2a2f99);
       color: white;
@@ -119,7 +118,6 @@
       transform: translateY(-50%) scale(1.1);
     }
 
-    /* ========== كاروسيل البطاقة الواحدة مع السحب ========== */
     .visa-carousel {
       margin: 0 20px 25px;
       position: relative;
@@ -309,7 +307,6 @@
       transition: transform 1s ease;
     }
 
-    /* ========== نقاط التبويض (dots) ========== */
     .carousel-dots {
       display: flex;
       justify-content: center;
@@ -337,7 +334,6 @@
       box-shadow: 0 0 8px rgba(26, 31, 113, 0.5);
     }
 
-    /* ========== إجراءات سريعة ========== */
     .quick-actions {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -392,7 +388,6 @@
       text-align: center;
     }
 
-    /* ========== تفاصيل البطاقة الحالية ========== */
     .card-details-section {
       background: white;
       border-radius: 20px;
@@ -449,7 +444,6 @@
       color: var(--warning);
     }
 
-    /* ========== أزرار الإجراءات ========== */
     .action-buttons {
       display: flex;
       gap: 15px;
@@ -495,58 +489,16 @@
       transform: translateY(-3px);
     }
 
-    /* ========== معلومات إضافية ========== */
-    .additional-info {
-      background: white;
-      border-radius: 20px;
-      margin: 0 20px;
-      padding: 25px;
-      box-shadow: 0 4px 15px var(--shadow-light);
+    /* زر إدارة الحدود في الأسفل */
+    .bottom-action {
+      margin: 10px 20px 0;
     }
 
-    .info-item {
-      margin-bottom: 20px;
+    .bottom-action .visa-btn.secondary {
+      width: 100%;
+      flex: none;
     }
 
-    .info-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .info-title {
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .info-text {
-      color: var(--text-gray);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    /* ========== تذييل الصفحة ========== */
-    .visa-footer {
-      text-align: center;
-      padding: 30px 20px 20px;
-      color: var(--text-light);
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .security-note {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 10px;
-      color: var(--success);
-      font-weight: 600;
-    }
-
-    /* ========== تأثيرات الحركة ========== */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -556,7 +508,6 @@
       animation: fadeIn 0.5s ease forwards;
     }
 
-    /* ========== شريط التحميل ========== */
     .loading-spinner {
       display: none;
       position: fixed;
@@ -583,7 +534,6 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ========== رسائل التنبيه ========== */
     .visa-toast {
       position: fixed;
       top: 20px;
@@ -622,30 +572,36 @@
         flex-direction: column;
       }
     }
+
+    .refresh-balance-btn {
+      background: transparent;
+      border: none;
+      color: var(--visa-blue);
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: transform 0.3s ease;
+    }
+    .refresh-balance-btn:hover {
+      transform: rotate(180deg);
+    }
   </style>
 </head>
 <body>
   <div class="visa-page" id="visaPage">
     <div class="visa-frame">
       
-      <!-- رأس الصفحة -->
       <div class="visa-header">
         <button class="page-close-btn" id="visaBackBtn">&times;</button>
         <h1>بطاقة Visa</h1>
         <p>بطاقتك الذكية للدفع حول العالم</p>
       </div>
 
-      <!-- ========== كاروسيل البطاقة الواحدة مع السحب والنقاط ========== -->
       <div class="visa-carousel fade-in">
-        <!-- حاوية البطاقة (يتم تعبئتها ديناميكياً) -->
-        <div class="carousel-container" id="carouselContainer">
-          <!-- سيتم وضع بطاقة Visa هنا عبر JavaScript -->
-        </div>
-        <!-- نقاط التبويض -->
+        <div class="carousel-container" id="carouselContainer"></div>
         <div class="carousel-dots" id="carouselDots"></div>
       </div>
 
-      <!-- إجراءات سريعة -->
       <div class="quick-actions">
         <div class="action-item" id="freezeCard">
           <div class="action-icon freeze">
@@ -661,15 +617,17 @@
         </div>
       </div>
 
-      <!-- تفاصيل البطاقة الحالية (يتم تحديثها تلقائياً) -->
       <div class="card-details-section fade-in" id="cardDetailsSection">
         <div class="section-title">
           <i class="fas fa-info-circle"></i>
           تفاصيل البطاقة
+          <button class="refresh-balance-btn" id="refreshBalanceBtn" title="تحديث الرصيد">
+            <i class="fas fa-sync-alt"></i>
+          </button>
         </div>
         <div class="detail-item">
-          <div class="detail-label"><i class="fas fa-wallet"></i> الرصيد المتاح</div>
-          <div class="detail-value positive" id="cardBalance">$1,245.75</div>
+          <div class="detail-label"><i class="fas fa-wallet"></i> الرصيد المتاح (USDT)</div>
+          <div class="detail-value positive" id="cardBalance">0.00</div>
         </div>
         <div class="detail-item">
           <div class="detail-label"><i class="fas fa-credit-card"></i> نوع البطاقة</div>
@@ -685,51 +643,43 @@
         </div>
       </div>
 
-      <!-- أزرار الإجراءات -->
+      <!-- زر طلب بطاقة جديدة فقط -->
       <div class="action-buttons fade-in">
         <button class="visa-btn primary" id="requestNewCard">
           <i class="fas fa-plus-circle"></i> ترقبوا التفعيل القادم للبطاقات
         </button>
+      </div>
+
+      <!-- زر إدارة الحدود في الأسفل -->
+      <div class="bottom-action fade-in">
         <button class="visa-btn secondary" id="manageLimits">
           <i class="fas fa-sliders-h"></i> إدارة الحدود
         </button>
       </div>
 
-      <!-- معلومات إضافية -->
-      <div class="additional-info fade-in">
-        <div class="info-item">
-          <div class="info-title"><i class="fas fa-shield-alt"></i> الأمان والحماية</div>
-          <div class="info-text">
-            بطاقتك مؤمنة بتقنية الحماية من الاحتيال مع رقابة على مدار الساعة. 
-            يمكنك تجميد البطاقة فوراً في حالة فقدانها أو سرقتها.
-          </div>
-        </div>
-        <div class="info-item">
-          <div class="info-title"><i class="fas fa-headset"></i> الدعم الفني</div>
-          <div class="info-text">
-            خدمة العملاء متاحة 24/7 لدعمك في أي استفسار أو مشكلة.
-            اتصل بنا على الرقم الموحد: 9200 1234 966+
-          </div>
-        </div>
-      </div>
-
-      <!-- تذييل الصفحة -->
-      <div class="visa-footer">
-        Crynova Visa • الدفع الذكي حول العالم
-        <div class="security-note">
-          <i class="fas fa-lock"></i> جميع معاملاتك مؤمنة ومشفرة
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- شاشة التحميل -->
   <div class="loading-spinner" id="loadingSpinner">
     <div class="spinner"></div>
   </div>
 
   <script>
-    // ========== بيانات جميع البطاقات (تصميم الوجه الأمامي/الخلفي الكامل) ==========
+    // ========== تهيئة Firebase (التكوين المقدم) ==========
+    const firebaseConfig = {
+      apiKey: "AIzaSyBX8v0qIVjG-Z46fVDeEUDKcPxa_FQF9Qc",
+      authDomain: "bnak-belaiba.firebaseapp.com",
+      projectId: "bnak-belaiba",
+      storageBucket: "bnak-belaiba.firebasestorage.app",
+      messagingSenderId: "286736432059",
+      appId: "1:286736432059:web:ec1ed4292850f00008229e"
+    };
+
+    // تهيئة Firebase (باستخدام نسخة التوافق)
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ========== بيانات البطاقات ==========
     const cardsData = [
       {
         id: 'visa_platinum_main',
@@ -738,9 +688,9 @@
         holder: 'AKRAM KHEZZARI',
         expiry: '08/27',
         cvv: '328',
-        balance: 1245.75,
+        balance: 0.00,
         issueDate: '08/2023',
-        status: 'pending', // تعديل: من active إلى pending
+        status: 'pending',
         backgroundFront: 'linear-gradient(135deg, #1a1f71, #3a3fb3)',
         backgroundBack: 'linear-gradient(135deg, #3a3fb3, #1a1f71)',
         textColor: 'white',
@@ -753,9 +703,9 @@
         holder: 'AKRAM KHEZZARI',
         expiry: '12/26',
         cvv: '561',
-        balance: 850.00,
+        balance: 0.00,
         issueDate: '12/2022',
-        status: 'pending', // تعديل
+        status: 'pending',
         backgroundFront: 'linear-gradient(135deg, #f0b90b, #ffd700)',
         backgroundBack: 'linear-gradient(135deg, #ffd700, #f0b90b)',
         textColor: '#333',
@@ -768,9 +718,9 @@
         holder: 'AKRAM KHEZZARI',
         expiry: '03/28',
         cvv: '902',
-        balance: 250.00,
+        balance: 0.00,
         issueDate: '03/2024',
-        status: 'pending', // تعديل
+        status: 'pending',
         backgroundFront: 'linear-gradient(135deg, #26a17b, #2dcc9e)',
         backgroundBack: 'linear-gradient(135deg, #2dcc9e, #26a17b)',
         textColor: 'white',
@@ -783,9 +733,9 @@
         holder: 'AKRAM KHEZZARI',
         expiry: '09/29',
         cvv: '447',
-        balance: 2150.00,
+        balance: 0.00,
         issueDate: '09/2025',
-        status: 'pending', // تعديل
+        status: 'pending',
         backgroundFront: 'linear-gradient(135deg, #e5e4e2, #ffffff)',
         backgroundBack: 'linear-gradient(135deg, #ffffff, #e5e4e2)',
         textColor: '#333',
@@ -796,38 +746,26 @@
     // ========== المتغيرات العامة ==========
     let currentUser = {
       firstName: 'Akram',
-      lastName: 'Khezzari'
+      lastName: 'Khezzari',
+      id: null
     };
-    let currentCardIndex = 0;      // البطاقة المعروضة حالياً
+    let currentCardIndex = 0;
     let touchStartX = 0;
     let touchEndX = 0;
-    const SWIPE_THRESHOLD = 70;   // مسافة السحب الأدنى
+    const SWIPE_THRESHOLD = 70;
 
-    // ========== تهيئة الصفحة ==========
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 تهيئة كاروسيل البطاقات مع السحب والنقاط');
+      console.log('🚀 تهيئة الصفحة');
       
-      // تهيئة بيانات المستخدم من تليغرام
       initializeUserData();
-      
-      // تجهيز أسماء حاملي البطاقات
       updateCardHolders();
-      
-      // رسم الكاروسيل: البطاقة والنقاط
       renderCarousel();
-      
-      // إضافة مستمعي الأحداث
       setupEventListeners();
       
-      // تحديث تفاصيل البطاقة الحالية
-      updateCardDetails();
-      
-      setTimeout(() => {
-        showToast('مرحباً بك في خدمة Visa من Crynova!', 'success');
-      }, 1000);
+      // جلب الرصيد عند تحميل الصفحة
+      fetchUSDTBalance();
     });
 
-    // ========== الحصول على بيانات المستخدم من Telegram ==========
     function initializeUserData() {
       try {
         if (window.Telegram && Telegram.WebApp) {
@@ -836,14 +774,21 @@
           if (user && user.id) {
             currentUser.firstName = user.first_name || currentUser.firstName;
             currentUser.lastName = user.last_name || currentUser.lastName;
+            currentUser.id = user.id;
+            console.log('✅ مستخدم تليغرام:', currentUser.id);
           }
         }
       } catch (error) {
-        console.log('❌ Telegram غير متوفر، استخدام البيانات التجريبية');
+        console.error('❌ خطأ في قراءة بيانات Telegram:', error);
+      }
+      
+      // إذا لم يتم العثور على معرف (للتطوير)، نستخدم معرفًا افتراضيًا
+      if (!currentUser.id) {
+        currentUser.id = '123456789'; // غير هذا الرقم حسب الرصيد المخزن في Firebase
+        console.warn('⚠️ استخدام معرف افتراضي:', currentUser.id);
       }
     }
 
-    // ========== تحديث اسم حامل البطاقة في كل البطاقات ==========
     function updateCardHolders() {
       const fullName = `${currentUser.firstName.toUpperCase()} ${currentUser.lastName.toUpperCase()}`;
       cardsData.forEach(card => {
@@ -851,13 +796,200 @@
       });
     }
 
-    // ========== رسم البطاقة الحالية والنقاط ==========
+    // ========== دالة جلب الرصيد مع تصحيح الأخطاء ==========
+    async function fetchUSDTBalance() {
+      if (!currentUser.id) {
+        console.error('❌ لا يوجد معرف مستخدم');
+        showToast('معرف المستخدم غير موجود', 'error');
+        return;
+      }
+
+      console.log('🔍 بدء البحث عن رصيد USDT للمستخدم:', currentUser.id);
+      showLoading(true);
+
+      let balanceFound = false;
+      let balanceValue = 0;
+      let source = '';
+
+      try {
+        // --- المسار 1: balances/{userId} -> wallets.USDT ---
+        console.log('1. محاولة balances/' + currentUser.id + ' (حقل wallets.USDT)');
+        const balanceRef = db.collection('balances').doc(String(currentUser.id));
+        const balanceSnap = await balanceRef.get();
+        
+        if (balanceSnap.exists) {
+          const data = balanceSnap.data();
+          console.log('   📄 بيانات balances:', JSON.stringify(data, null, 2));
+          
+          if (data.wallets && typeof data.wallets === 'object') {
+            if (data.wallets.USDT !== undefined) {
+              balanceValue = data.wallets.USDT;
+              balanceFound = true;
+              source = 'balances/{id}.wallets.USDT';
+            } else if (data.wallets.usdt !== undefined) {
+              balanceValue = data.wallets.usdt;
+              balanceFound = true;
+              source = 'balances/{id}.wallets.usdt';
+            }
+          }
+          
+          if (!balanceFound && data.usdtBalance !== undefined) {
+            balanceValue = data.usdtBalance;
+            balanceFound = true;
+            source = 'balances/{id}.usdtBalance';
+          }
+        } else {
+          console.log('   ❌ مستند balances غير موجود');
+        }
+
+        // --- المسار 2: مجموعة wallets حيث userId == معرف المستخدم و currency == 'USDT' ---
+        if (!balanceFound) {
+          console.log('2. محاولة مجموعة wallets (شرط userId + currency == USDT)');
+          const walletsQuery = await db.collection('wallets')
+            .where('userId', '==', String(currentUser.id))
+            .where('currency', '==', 'USDT')
+            .limit(1)
+            .get();
+          
+          if (!walletsQuery.empty) {
+            const doc = walletsQuery.docs[0];
+            const data = doc.data();
+            console.log('   📄 بيانات wallet:', JSON.stringify(data, null, 2));
+            balanceValue = data.balance || data.amount || 0;
+            balanceFound = true;
+            source = 'wallets (userId + currency=USDT)';
+          } else {
+            console.log('   ❌ لا توجد محفظة بهذا userId و currency=USDT');
+          }
+        }
+
+        // --- المسار 3: أي محفظة للمستخدم (أول wallet) ---
+        if (!balanceFound) {
+          console.log('3. محاولة مجموعة wallets (أول محفظة للمستخدم)');
+          const anyWalletQuery = await db.collection('wallets')
+            .where('userId', '==', String(currentUser.id))
+            .limit(1)
+            .get();
+          
+          if (!anyWalletQuery.empty) {
+            const doc = anyWalletQuery.docs[0];
+            const data = doc.data();
+            console.log('   📄 بيانات أول wallet:', JSON.stringify(data, null, 2));
+            balanceValue = data.balance || data.amount || 0;
+            balanceFound = true;
+            source = 'wallets (أول محفظة)';
+          } else {
+            console.log('   ❌ لا توجد أي محفظة للمستخدم');
+          }
+        }
+
+        // --- المسار 4: الاستعلام عن balances باستخدام حقل userId (إذا كان المعرف مختلفاً) ---
+        if (!balanceFound) {
+          console.log('4. محاولة الاستعلام عن balances حيث userId == ' + currentUser.id);
+          const balanceQuery = await db.collection('balances')
+            .where('userId', '==', String(currentUser.id))
+            .limit(1)
+            .get();
+          
+          if (!balanceQuery.empty) {
+            const doc = balanceQuery.docs[0];
+            const data = doc.data();
+            console.log('   📄 بيانات balances (استعلام):', JSON.stringify(data, null, 2));
+            if (data.wallets && data.wallets.USDT !== undefined) {
+              balanceValue = data.wallets.USDT;
+              balanceFound = true;
+              source = 'balances (استعلام) .wallets.USDT';
+            } else if (data.usdtBalance !== undefined) {
+              balanceValue = data.usdtBalance;
+              balanceFound = true;
+              source = 'balances (استعلام) .usdtBalance';
+            }
+          } else {
+            console.log('   ❌ لا توجد مستندات balances تطابق userId');
+          }
+        }
+
+        // --- المسار 5: subcollection wallets تحت balances/{userId} ---
+        if (!balanceFound) {
+          console.log('5. محاولة balances/' + currentUser.id + '/wallets where currency == USDT');
+          const subWalletsQuery = await db.collection('balances')
+            .doc(String(currentUser.id))
+            .collection('wallets')
+            .where('currency', '==', 'USDT')
+            .limit(1)
+            .get();
+          
+          if (!subWalletsQuery.empty) {
+            const doc = subWalletsQuery.docs[0];
+            const data = doc.data();
+            console.log('   📄 بيانات subcollection wallet:', JSON.stringify(data, null, 2));
+            balanceValue = data.balance || data.amount || 0;
+            balanceFound = true;
+            source = 'balances/{id}/wallets (subcollection)';
+          } else {
+            console.log('   ❌ لا توجد محفظة في subcollection');
+          }
+        }
+
+        // --- المسار 6: users/{userId}/wallets (subcollection) ---
+        if (!balanceFound) {
+          console.log('6. محاولة users/' + currentUser.id + '/wallets where currency == USDT');
+          const userWalletsQuery = await db.collection('users')
+            .doc(String(currentUser.id))
+            .collection('wallets')
+            .where('currency', '==', 'USDT')
+            .limit(1)
+            .get();
+          
+          if (!userWalletsQuery.empty) {
+            const doc = userWalletsQuery.docs[0];
+            const data = doc.data();
+            console.log('   📄 بيانات users/{id}/wallets:', JSON.stringify(data, null, 2));
+            balanceValue = data.balance || data.amount || 0;
+            balanceFound = true;
+            source = 'users/{id}/wallets (subcollection)';
+          } else {
+            console.log('   ❌ لا توجد محفظة في users/{id}/wallets');
+          }
+        }
+
+        // --- النتيجة النهائية ---
+        if (balanceFound) {
+          const numericBalance = parseFloat(balanceValue);
+          if (!isNaN(numericBalance)) {
+            updateAllCardsBalance(numericBalance);
+            showToast(`✅ تم تحديث الرصيد: ${numericBalance.toFixed(2)} USDT (via ${source})`, 'success');
+            console.log(`🎉 نجاح: الرصيد = ${numericBalance} من ${source}`);
+          } else {
+            console.error('❌ قيمة الرصيد غير صالحة:', balanceValue);
+            showToast('⚠️ قيمة الرصيد غير صالحة', 'warning');
+          }
+        } else {
+          console.warn('⚠️ لم يتم العثور على أي رصيد بعد جميع المحاولات');
+          showToast('⚠️ لم يتم العثور على رصيد USDT في Firebase', 'warning');
+          // لا نغير الرصيد (يبقى 0.00)
+        }
+
+      } catch (error) {
+        console.error('🔥 خطأ في جلب الرصيد:', error);
+        showToast('فشل تحميل الرصيد: ' + error.message, 'error');
+      } finally {
+        showLoading(false);
+        updateCardDetails();
+      }
+    }
+
+    function updateAllCardsBalance(balance) {
+      cardsData.forEach(card => {
+        card.balance = balance;
+      });
+    }
+
     function renderCarousel() {
       renderCurrentCard();
       renderDots();
     }
 
-    // ========== رسم البطاقة حسب currentCardIndex ==========
     function renderCurrentCard() {
       const container = document.getElementById('carouselContainer');
       if (!container) return;
@@ -866,17 +998,14 @@
       const cardHTML = generateCardHTML(card);
       container.innerHTML = cardHTML;
       
-      // إضافة مستمع قلب البطاقة
       const cardInner = container.querySelector('.card-inner');
       if (cardInner) {
         cardInner.addEventListener('click', function(e) {
-          // لا نقلب إذا كان الضغط على زر (لا يوجد أزرار داخلية)
           this.classList.toggle('flipped');
         });
       }
     }
 
-    // ========== إنشاء كود HTML لبطاقة واحدة ==========
     function generateCardHTML(card) {
       const lastFour = card.number.slice(-4);
       const displayNumber = `**** **** **** ${lastFour}`;
@@ -884,7 +1013,6 @@
       return `
         <div class="main-visa-card">
           <div class="card-inner">
-            <!-- الوجه الأمامي -->
             <div class="card-front" style="background: ${card.backgroundFront}; color: ${card.textColor};">
               <div class="card-chip" style="background: linear-gradient(135deg, ${card.chipColor}, ${card.chipColor}dd);"></div>
               <div class="card-logo">
@@ -904,7 +1032,6 @@
               </div>
               <div class="card-shine"></div>
             </div>
-            <!-- الوجه الخلفي -->
             <div class="card-back" style="background: ${card.backgroundBack}; color: ${card.textColor};">
               <div class="magnetic-stripe"></div>
               <div class="cvv-section">
@@ -920,7 +1047,6 @@
       `;
     }
 
-    // ========== رسم نقاط التبويض ==========
     function renderDots() {
       const dotsContainer = document.getElementById('carouselDots');
       if (!dotsContainer) return;
@@ -932,7 +1058,6 @@
       });
       dotsContainer.innerHTML = dotsHTML;
       
-      // إضافة مستمع للنقر على النقاط
       dotsContainer.querySelectorAll('.dot').forEach(dot => {
         dot.addEventListener('click', function(e) {
           e.stopPropagation();
@@ -946,10 +1071,9 @@
       });
     }
 
-    // ========== تحديث قسم تفاصيل البطاقة حسب البطاقة الحالية ==========
     function updateCardDetails() {
       const card = cardsData[currentCardIndex];
-      document.getElementById('cardBalance').textContent = `$${card.balance.toFixed(2)}`;
+      document.getElementById('cardBalance').textContent = `${card.balance.toFixed(2)} USDT`;
       document.getElementById('cardType').textContent = `Visa ${card.type}`;
       document.getElementById('cardIssueDate').textContent = card.issueDate || '08/2023';
       
@@ -966,27 +1090,20 @@
       }
     }
 
-    // ========== إعداد جميع مستمعي الأحداث ==========
     function setupEventListeners() {
-      // زر العودة
       document.getElementById('visaBackBtn').addEventListener('click', goBack);
-      
-      // تجميد/إلغاء تجميد البطاقة الحالية
       document.getElementById('freezeCard').addEventListener('click', toggleFreezeCard);
-      
-      // عرض المعاملات
       document.getElementById('viewTransactions').addEventListener('click', viewAllTransactions);
-      
-      // طلب بطاقة جديدة (تم تغيير النص فقط، الوظيفة كما هي)
       document.getElementById('requestNewCard').addEventListener('click', requestNewCard);
-      
-      // إدارة الحدود
       document.getElementById('manageLimits').addEventListener('click', manageLimits);
       
-      // مستمعات السحب (touch + mouse)
+      // زر تحديث الرصيد
+      document.getElementById('refreshBalanceBtn').addEventListener('click', function() {
+        fetchUSDTBalance();
+      });
+      
       const carouselContainer = document.getElementById('carouselContainer');
       
-      // أحداث اللمس
       carouselContainer.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
       }, { passive: true });
@@ -996,12 +1113,11 @@
         handleSwipe();
       }, { passive: true });
       
-      // أحداث الفأرة (سحب بالماوس)
       let isMouseDown = false;
       carouselContainer.addEventListener('mousedown', (e) => {
         isMouseDown = true;
         touchStartX = e.screenX;
-        e.preventDefault(); // منع تحديد النص
+        e.preventDefault();
       });
       
       carouselContainer.addEventListener('mousemove', (e) => {
@@ -1022,23 +1138,18 @@
       });
     }
 
-    // ========== معالجة السحب (التنبؤ باليمين/اليسار) ==========
     function handleSwipe() {
       const diff = touchStartX - touchEndX;
-      
       if (Math.abs(diff) < SWIPE_THRESHOLD) return;
       
       if (diff > 0) {
-        // سحب لليسار ← البطاقة التالية
         if (currentCardIndex < cardsData.length - 1) {
           currentCardIndex++;
         } else {
-          // وصلنا إلى النهاية، نعرض رسالة
           showToast('هذه آخر بطاقة', 'info');
           return;
         }
       } else {
-        // سحب لليمين ← البطاقة السابقة
         if (currentCardIndex > 0) {
           currentCardIndex--;
         } else {
@@ -1047,22 +1158,18 @@
         }
       }
       
-      // إعادة رسم الكاروسيل والنقاط وتفاصيل البطاقة
       renderCarousel();
       updateCardDetails();
     }
 
-    // ========== تبديل حالة التجميد للبطاقة الحالية ==========
     function toggleFreezeCard() {
       const card = cardsData[currentCardIndex];
       const freezeBtn = document.getElementById('freezeCard');
       const icon = freezeBtn.querySelector('.action-icon');
       const text = freezeBtn.querySelector('.action-text');
       
-      if (card.status === 'active' || card.status === 'pending') { // نسمح بتجميد حتى لو pending (بدون تغيير في السلوك)
-        // تجميد
+      if (card.status === 'active' || card.status === 'pending') {
         card.status = 'frozen';
-        // تغيير مظهر البطاقة (درجة رمادية)
         card.backgroundFront = 'linear-gradient(135deg, #6b7b8f, #4a5a6a)';
         card.backgroundBack = 'linear-gradient(135deg, #4a5a6a, #6b7b8f)';
         icon.style.background = 'linear-gradient(135deg, var(--danger), #ff6b81)';
@@ -1070,9 +1177,7 @@
         text.textContent = 'إلغاء التجميد';
         showToast('تم تجميد البطاقة', 'warning');
       } else {
-        // إلغاء التجميد - استعادة التدرج الأصلي حسب نوع البطاقة
-        card.status = 'pending'; // نعيدها إلى pending كما كانت
-        // استرجاع الألوان الأصلية من template
+        card.status = 'pending';
         const original = getOriginalCardStyle(card.id);
         card.backgroundFront = original.backgroundFront;
         card.backgroundBack = original.backgroundBack;
@@ -1084,12 +1189,10 @@
         showToast('تم إلغاء تجميد البطاقة', 'success');
       }
       
-      // إعادة رسم البطاقة وتحديث التفاصيل
       renderCurrentCard();
       updateCardDetails();
     }
 
-    // ========== الحصول على الألوان الأصلية للبطاقة (للرجوع بعد التجميد) ==========
     function getOriginalCardStyle(cardId) {
       const originals = {
         'visa_platinum_main': {
@@ -1120,7 +1223,6 @@
       return originals[cardId] || originals['visa_platinum_main'];
     }
 
-    // ========== عرض جميع المعاملات ==========
     function viewAllTransactions() {
       showLoading(true);
       setTimeout(() => {
@@ -1129,22 +1231,18 @@
       }, 1000);
     }
 
-    // ========== طلب بطاقة جديدة ==========
     function requestNewCard() {
       showLoading(true);
       setTimeout(() => {
         showLoading(false);
-        // تعديل الرسالة لتتناسب مع النص الجديد
         showToast('البطاقات قيد التفعيل قريباً، تابعنا!', 'success');
       }, 2000);
     }
 
-    // ========== إدارة الحدود ==========
     function manageLimits() {
       showToast('فتح صفحة إدارة حدود الإنفاق...', 'info');
     }
 
-    // ========== العودة ==========
     function goBack() {
       if (typeof showMainPage !== 'undefined') {
         showMainPage();
@@ -1153,7 +1251,6 @@
       }
     }
 
-    // ========== إظهار / إخفاء شاشة التحميل ==========
     function showLoading(show) {
       const spinner = document.getElementById('loadingSpinner');
       if (spinner) {
@@ -1161,7 +1258,6 @@
       }
     }
 
-    // ========== عرض رسالة Toast ==========
     function showToast(message, type = 'info') {
       const existingToasts = document.querySelectorAll('.visa-toast');
       existingToasts.forEach(toast => toast.remove());
@@ -1184,7 +1280,6 @@
       }, 3000);
     }
 
-    // ========== تأثير التلاشي ==========
     window.addEventListener('scroll', function() {
       const fadeElements = document.querySelectorAll('.fade-in');
       fadeElements.forEach(element => {
