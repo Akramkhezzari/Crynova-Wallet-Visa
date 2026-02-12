@@ -2,17 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>بطاقة Visa - Crynova</title>
   
-  <!-- إضافة Telegram Web App SDK -->
+  <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (غير مستخدم حالياً) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   
-  <!-- إضافة Font Awesome للأيقونات -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
@@ -59,10 +59,6 @@
       display: block;
     }
 
-    .visa-page.hidden {
-      display: none;
-    }
-
     .visa-frame {
       width: 100%;
       max-width: 480px;
@@ -73,7 +69,7 @@
       padding-bottom: 80px;
     }
 
-    /* ========== رأس صفحة Visa ========== */
+    /* ========== رأس الصفحة ========== */
     .visa-header {
       background: linear-gradient(135deg, var(--visa-blue), #2a2f99);
       color: white;
@@ -82,7 +78,6 @@
       position: relative;
       width: 100%;
       box-shadow: 0 4px 12px rgba(26, 31, 113, 0.3);
-      border-radius: 0; /* تم تغيير هذا فقط */
       margin-bottom: 20px;
     }
 
@@ -124,9 +119,26 @@
       transform: translateY(-50%) scale(1.1);
     }
 
-    /* ========== بطاقة Visa الرئيسية ========== */
+    /* ========== كاروسيل البطاقة الواحدة مع السحب ========== */
+    .visa-carousel {
+      margin: 0 20px 25px;
+      position: relative;
+      user-select: none;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      cursor: grab;
+      transition: transform 0.2s ease;
+    }
+
+    .carousel-container:active {
+      cursor: grabbing;
+    }
+
     .main-visa-card {
-      margin: 0 20px 30px;
+      width: 100%;
       perspective: 1000px;
     }
 
@@ -154,8 +166,6 @@
     }
 
     .card-front {
-      background: linear-gradient(135deg, #1a1f71, #3a3fb3);
-      color: white;
       padding: 25px;
       display: flex;
       flex-direction: column;
@@ -163,8 +173,6 @@
     }
 
     .card-back {
-      background: linear-gradient(135deg, #3a3fb3, #1a1f71);
-      color: white;
       transform: rotateY(180deg);
       padding: 25px;
       display: flex;
@@ -213,8 +221,8 @@
     }
 
     .card-number {
-      font-size: 1.6rem;
-      letter-spacing: 3px;
+      font-size: 1.4rem;
+      letter-spacing: 2px;
       font-weight: 600;
       margin-bottom: 20px;
       text-align: center;
@@ -281,6 +289,54 @@
       margin-top: 10px;
     }
 
+    .card-shine {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 70%
+      );
+      transform: translateX(-100%);
+    }
+
+    .card-inner:hover .card-shine {
+      transform: translateX(100%);
+      transition: transform 1s ease;
+    }
+
+    /* ========== نقاط التبويض (dots) ========== */
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      direction: ltr;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(26, 31, 113, 0.3);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+    }
+
+    .dot.active {
+      width: 26px;
+      border-radius: 12px;
+      background: var(--visa-blue);
+      box-shadow: 0 0 8px rgba(26, 31, 113, 0.5);
+    }
+
     /* ========== إجراءات سريعة ========== */
     .quick-actions {
       display: grid;
@@ -336,7 +392,7 @@
       text-align: center;
     }
 
-    /* ========== تفاصيل البطاقة ========== */
+    /* ========== تفاصيل البطاقة الحالية ========== */
     .card-details-section {
       background: white;
       border-radius: 20px;
@@ -391,89 +447,6 @@
 
     .detail-value.warning {
       color: var(--warning);
-    }
-
-    /* ========== بطاقات إضافية ========== */
-    .additional-cards {
-      margin: 0 20px 30px;
-    }
-
-    .cards-slider {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding: 10px 5px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--visa-blue) transparent;
-    }
-
-    .cards-slider::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    .cards-slider::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .cards-slider::-webkit-scrollbar-thumb {
-      background-color: var(--visa-blue);
-      border-radius: 20px;
-    }
-
-    .additional-card {
-      min-width: 200px;
-      height: 130px;
-      border-radius: 15px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 5px 15px var(--shadow-medium);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .additional-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px var(--shadow-heavy);
-    }
-
-    .additional-card.gold {
-      background: linear-gradient(135deg, #f0b90b, #ffd700);
-      color: #333;
-    }
-
-    .additional-card.platinum {
-      background: linear-gradient(135deg, #e5e4e2, #ffffff);
-      color: #333;
-    }
-
-    .additional-card.virtual {
-      background: linear-gradient(135deg, #26a17b, #2dcc9e);
-      color: white;
-    }
-
-    .card-mini-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .card-mini-type {
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .card-mini-logo {
-      font-size: 1.5rem;
-      font-weight: 900;
-    }
-
-    .card-mini-number {
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      font-weight: 600;
-      font-family: 'Courier New', monospace;
     }
 
     /* ========== أزرار الإجراءات ========== */
@@ -554,62 +527,33 @@
       line-height: 1.6;
     }
 
-    /* ========== تجاوبية للشاشات الصغيرة ========== */
-    @media (max-width: 480px) {
-      .quick-actions {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .action-buttons {
-        flex-direction: column;
-      }
-      
-      .card-number {
-        font-size: 1.3rem;
-        letter-spacing: 2px;
-      }
-      
-      .additional-card {
-        min-width: 180px;
-        height: 120px;
-      }
+    /* ========== تذييل الصفحة ========== */
+    .visa-footer {
+      text-align: center;
+      padding: 30px 20px 20px;
+      color: var(--text-light);
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .security-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--success);
+      font-weight: 600;
     }
 
     /* ========== تأثيرات الحركة ========== */
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .fade-in {
       animation: fadeIn 0.5s ease forwards;
-    }
-
-    /* ========== تأثيرات البطاقة ========== */
-    .card-shine {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(
-        120deg,
-        rgba(255, 255, 255, 0) 30%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0) 70%
-      );
-      transform: translateX(-100%);
-    }
-
-    .card-inner:hover .card-shine {
-      transform: translateX(100%);
-      transition: transform 1s ease;
     }
 
     /* ========== شريط التحميل ========== */
@@ -666,40 +610,24 @@
     }
 
     @keyframes slideDown {
-      from {
-        transform: translateX(-50%) translateY(-20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-      }
+      from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
     }
 
-    /* ========== تذييل الصفحة ========== */
-    .visa-footer {
-      text-align: center;
-      padding: 30px 20px 20px;
-      color: var(--text-light);
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .security-note {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 10px;
-      color: var(--success);
-      font-weight: 600;
+    @media (max-width: 480px) {
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .action-buttons {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- صفحة Visa المستقلة -->
   <div class="visa-page" id="visaPage">
     <div class="visa-frame">
+      
       <!-- رأس الصفحة -->
       <div class="visa-header">
         <button class="page-close-btn" id="visaBackBtn">&times;</button>
@@ -707,42 +635,14 @@
         <p>بطاقتك الذكية للدفع حول العالم</p>
       </div>
 
-      <!-- بطاقة Visa الرئيسية -->
-      <div class="main-visa-card">
-        <div class="card-inner" id="cardFlip">
-          <!-- وجه البطاقة -->
-          <div class="card-front">
-            <div class="card-chip"></div>
-            <div class="card-logo">
-              <div class="visa-logo">VISA</div>
-              <div class="card-type">PLATINUM</div>
-            </div>
-            <div class="card-number" id="cardNumber">**** **** **** 4592</div>
-            <div class="card-details">
-              <div class="card-holder">
-                <div class="card-label">حامل البطاقة</div>
-                <div class="card-value" id="cardHolder">AKRAM KHEZZARI</div>
-              </div>
-              <div class="card-expiry">
-                <div class="card-label">صالحة حتى</div>
-                <div class="card-value" id="cardExpiry">08/27</div>
-              </div>
-            </div>
-            <div class="card-shine"></div>
-          </div>
-          
-          <!-- ظهر البطاقة -->
-          <div class="card-back">
-            <div class="magnetic-stripe"></div>
-            <div class="cvv-section">
-              <div class="cvv-label">رمز الأمان (CVV)</div>
-              <div class="cvv-number" id="cardCvv">328</div>
-            </div>
-            <div class="notice">
-              توقيع حامل البطاقة مطلوب. غير صالحة ما لم تكن موقعة.
-            </div>
-          </div>
+      <!-- ========== كاروسيل البطاقة الواحدة مع السحب والنقاط ========== -->
+      <div class="visa-carousel fade-in">
+        <!-- حاوية البطاقة (يتم تعبئتها ديناميكياً) -->
+        <div class="carousel-container" id="carouselContainer">
+          <!-- سيتم وضع بطاقة Visa هنا عبر JavaScript -->
         </div>
+        <!-- نقاط التبويض -->
+        <div class="carousel-dots" id="carouselDots"></div>
       </div>
 
       <!-- إجراءات سريعة -->
@@ -753,7 +653,6 @@
           </div>
           <div class="action-text">تجميد البطاقة</div>
         </div>
-        
         <div class="action-item" id="viewTransactions">
           <div class="action-icon transactions">
             <i class="fas fa-exchange-alt"></i>
@@ -762,116 +661,51 @@
         </div>
       </div>
 
-      <!-- تفاصيل البطاقة -->
-      <div class="card-details-section fade-in">
+      <!-- تفاصيل البطاقة الحالية (يتم تحديثها تلقائياً) -->
+      <div class="card-details-section fade-in" id="cardDetailsSection">
         <div class="section-title">
           <i class="fas fa-info-circle"></i>
           تفاصيل البطاقة
         </div>
-        
         <div class="detail-item">
-          <div class="detail-label">
-            <i class="fas fa-wallet"></i>
-            الرصيد المتاح
-          </div>
+          <div class="detail-label"><i class="fas fa-wallet"></i> الرصيد المتاح</div>
           <div class="detail-value positive" id="cardBalance">$1,245.75</div>
         </div>
-        
         <div class="detail-item">
-          <div class="detail-label">
-            <i class="fas fa-credit-card"></i>
-            نوع البطاقة
-          </div>
-          <div class="detail-value">Visa Platinum</div>
+          <div class="detail-label"><i class="fas fa-credit-card"></i> نوع البطاقة</div>
+          <div class="detail-value" id="cardType">Visa Platinum</div>
         </div>
-        
         <div class="detail-item">
-          <div class="detail-label">
-            <i class="fas fa-calendar-alt"></i>
-            تاريخ الإصدار
-          </div>
-          <div class="detail-value">08/2023</div>
+          <div class="detail-label"><i class="fas fa-calendar-alt"></i> تاريخ الإصدار</div>
+          <div class="detail-value" id="cardIssueDate">08/2023</div>
         </div>
-        
         <div class="detail-item">
-          <div class="detail-label">
-            <i class="fas fa-globe"></i>
-            الحالة
-          </div>
-          <div class="detail-value positive">
-            <i class="fas fa-check-circle"></i> نشطة
-          </div>
-        </div>
-      </div>
-
-      <!-- بطاقات إضافية -->
-      <div class="additional-cards fade-in">
-        <div class="section-title">
-          <i class="fas fa-id-card"></i>
-          بطاقاتك الأخرى
-        </div>
-        
-        <div class="cards-slider">
-          <div class="additional-card gold">
-            <div class="card-mini-header">
-              <div class="card-mini-type">Gold</div>
-              <div class="card-mini-logo">VISA</div>
-            </div>
-            <div class="card-mini-number">**** 3821</div>
-            <div class="card-mini-balance">$850.00</div>
-          </div>
-          
-          <div class="additional-card virtual">
-            <div class="card-mini-header">
-              <div class="card-mini-type">Virtual</div>
-              <div class="card-mini-logo">VISA</div>
-            </div>
-            <div class="card-mini-number">**** 7743</div>
-            <div class="card-mini-balance">$250.00</div>
-          </div>
-          
-          <div class="additional-card platinum">
-            <div class="card-mini-header">
-              <div class="card-mini-type">Platinum</div>
-              <div class="card-mini-logo">VISA</div>
-            </div>
-            <div class="card-mini-number">**** 5698</div>
-            <div class="card-mini-balance">$2,150.00</div>
-          </div>
+          <div class="detail-label"><i class="fas fa-globe"></i> الحالة</div>
+          <div class="detail-value warning" id="cardStatus"><i class="fas fa-hourglass-half"></i> قيد الانتظار</div>
         </div>
       </div>
 
       <!-- أزرار الإجراءات -->
       <div class="action-buttons fade-in">
         <button class="visa-btn primary" id="requestNewCard">
-          <i class="fas fa-plus-circle"></i>
-          طلب بطاقة جديدة
+          <i class="fas fa-plus-circle"></i> ترقبوا التفعيل القادم للبطاقات
         </button>
-        
         <button class="visa-btn secondary" id="manageLimits">
-          <i class="fas fa-sliders-h"></i>
-          إدارة الحدود
+          <i class="fas fa-sliders-h"></i> إدارة الحدود
         </button>
       </div>
 
       <!-- معلومات إضافية -->
       <div class="additional-info fade-in">
         <div class="info-item">
-          <div class="info-title">
-            <i class="fas fa-shield-alt"></i>
-            الأمان والحماية
-          </div>
+          <div class="info-title"><i class="fas fa-shield-alt"></i> الأمان والحماية</div>
           <div class="info-text">
             بطاقتك مؤمنة بتقنية الحماية من الاحتيال مع رقابة على مدار الساعة. 
             يمكنك تجميد البطاقة فوراً في حالة فقدانها أو سرقتها.
           </div>
         </div>
-        
         <div class="info-item">
-          <div class="info-title">
-            <i class="fas fa-headset"></i>
-            الدعم الفني
-          </div>
+          <div class="info-title"><i class="fas fa-headset"></i> الدعم الفني</div>
           <div class="info-text">
             خدمة العملاء متاحة 24/7 لدعمك في أي استفسار أو مشكلة.
             اتصل بنا على الرقم الموحد: 9200 1234 966+
@@ -883,8 +717,7 @@
       <div class="visa-footer">
         Crynova Visa • الدفع الذكي حول العالم
         <div class="security-note">
-          <i class="fas fa-lock"></i>
-          جميع معاملاتك مؤمنة ومشفرة
+          <i class="fas fa-lock"></i> جميع معاملاتك مؤمنة ومشفرة
         </div>
       </div>
     </div>
@@ -896,105 +729,439 @@
   </div>
 
   <script>
-    // ========== بيانات التطبيق ==========
-    let currentUser = {
-      id: null,
-      firstName: 'Akram',
-      lastName: 'Khezzari',
-      username: null
-    };
+    // ========== بيانات جميع البطاقات (تصميم الوجه الأمامي/الخلفي الكامل) ==========
+    const cardsData = [
+      {
+        id: 'visa_platinum_main',
+        type: 'PLATINUM',
+        number: '4592 8732 6451 4592',
+        holder: 'AKRAM KHEZZARI',
+        expiry: '08/27',
+        cvv: '328',
+        balance: 1245.75,
+        issueDate: '08/2023',
+        status: 'pending', // تعديل: من active إلى pending
+        backgroundFront: 'linear-gradient(135deg, #1a1f71, #3a3fb3)',
+        backgroundBack: 'linear-gradient(135deg, #3a3fb3, #1a1f71)',
+        textColor: 'white',
+        chipColor: '#f0b90b'
+      },
+      {
+        id: 'visa_gold',
+        type: 'GOLD',
+        number: '4823 9102 3746 3821',
+        holder: 'AKRAM KHEZZARI',
+        expiry: '12/26',
+        cvv: '561',
+        balance: 850.00,
+        issueDate: '12/2022',
+        status: 'pending', // تعديل
+        backgroundFront: 'linear-gradient(135deg, #f0b90b, #ffd700)',
+        backgroundBack: 'linear-gradient(135deg, #ffd700, #f0b90b)',
+        textColor: '#333',
+        chipColor: '#b8860b'
+      },
+      {
+        id: 'visa_virtual',
+        type: 'VIRTUAL',
+        number: '4532 7890 1245 7743',
+        holder: 'AKRAM KHEZZARI',
+        expiry: '03/28',
+        cvv: '902',
+        balance: 250.00,
+        issueDate: '03/2024',
+        status: 'pending', // تعديل
+        backgroundFront: 'linear-gradient(135deg, #26a17b, #2dcc9e)',
+        backgroundBack: 'linear-gradient(135deg, #2dcc9e, #26a17b)',
+        textColor: 'white',
+        chipColor: '#f0b90b'
+      },
+      {
+        id: 'visa_platinum_extra',
+        type: 'PLATINUM',
+        number: '4916 2387 5643 5698',
+        holder: 'AKRAM KHEZZARI',
+        expiry: '09/29',
+        cvv: '447',
+        balance: 2150.00,
+        issueDate: '09/2025',
+        status: 'pending', // تعديل
+        backgroundFront: 'linear-gradient(135deg, #e5e4e2, #ffffff)',
+        backgroundBack: 'linear-gradient(135deg, #ffffff, #e5e4e2)',
+        textColor: '#333',
+        chipColor: '#b0b0b0'
+      }
+    ];
 
-    // بيانات بطاقة Visa
-    let visaCard = {
-      id: 'visa_001',
-      number: '4592 8732 6451 4592',
-      holder: 'AKRAM KHEZZARI',
-      expiry: '08/27',
-      cvv: '328',
-      balance: 1245.75,
-      type: 'PLATINUM',
-      status: 'active'
+    // ========== المتغيرات العامة ==========
+    let currentUser = {
+      firstName: 'Akram',
+      lastName: 'Khezzari'
     };
+    let currentCardIndex = 0;      // البطاقة المعروضة حالياً
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const SWIPE_THRESHOLD = 70;   // مسافة السحب الأدنى
 
     // ========== تهيئة الصفحة ==========
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 تهيئة صفحة Visa...');
+      console.log('🚀 تهيئة كاروسيل البطاقات مع السحب والنقاط');
       
-      // تهيئة بيانات المستخدم
+      // تهيئة بيانات المستخدم من تليغرام
       initializeUserData();
       
-      // تهيئة واجهة البطاقة
-      initializeCard();
+      // تجهيز أسماء حاملي البطاقات
+      updateCardHolders();
       
-      // إعداد الأحداث
+      // رسم الكاروسيل: البطاقة والنقاط
+      renderCarousel();
+      
+      // إضافة مستمعي الأحداث
       setupEventListeners();
       
-      // عرض رسالة ترحيبية
+      // تحديث تفاصيل البطاقة الحالية
+      updateCardDetails();
+      
       setTimeout(() => {
         showToast('مرحباً بك في خدمة Visa من Crynova!', 'success');
       }, 1000);
     });
 
-    // ========== تهيئة بيانات المستخدم ==========
+    // ========== الحصول على بيانات المستخدم من Telegram ==========
     function initializeUserData() {
-      // محاولة الحصول على بيانات المستخدم من Telegram WebApp
       try {
         if (window.Telegram && Telegram.WebApp) {
           const tg = Telegram.WebApp;
           const user = tg.initDataUnsafe.user;
-          
           if (user && user.id) {
-            currentUser.id = user.id;
             currentUser.firstName = user.first_name || currentUser.firstName;
             currentUser.lastName = user.last_name || currentUser.lastName;
-            currentUser.username = user.username || null;
-            
-            // تحديث اسم حامل البطاقة
-            const cardHolderName = `${currentUser.firstName.toUpperCase()} ${currentUser.lastName.toUpperCase()}`;
-            visaCard.holder = cardHolderName;
-            
-            document.getElementById('cardHolder').textContent = cardHolderName;
           }
         }
       } catch (error) {
-        console.log('❌ Telegram WebApp غير متوفر، استخدام بيانات تجريبية');
+        console.log('❌ Telegram غير متوفر، استخدام البيانات التجريبية');
       }
     }
 
-    // ========== تهيئة واجهة البطاقة ==========
-    function initializeCard() {
-      // تحديث بيانات البطاقة في الواجهة
-      document.getElementById('cardNumber').textContent = formatCardNumber(visaCard.number);
-      document.getElementById('cardHolder').textContent = visaCard.holder;
-      document.getElementById('cardExpiry').textContent = visaCard.expiry;
-      document.getElementById('cardCvv').textContent = visaCard.cvv;
-      document.getElementById('cardBalance').textContent = `$${visaCard.balance.toFixed(2)}`;
+    // ========== تحديث اسم حامل البطاقة في كل البطاقات ==========
+    function updateCardHolders() {
+      const fullName = `${currentUser.firstName.toUpperCase()} ${currentUser.lastName.toUpperCase()}`;
+      cardsData.forEach(card => {
+        card.holder = fullName;
+      });
     }
 
-    // ========== إعداد الأحداث ==========
+    // ========== رسم البطاقة الحالية والنقاط ==========
+    function renderCarousel() {
+      renderCurrentCard();
+      renderDots();
+    }
+
+    // ========== رسم البطاقة حسب currentCardIndex ==========
+    function renderCurrentCard() {
+      const container = document.getElementById('carouselContainer');
+      if (!container) return;
+      
+      const card = cardsData[currentCardIndex];
+      const cardHTML = generateCardHTML(card);
+      container.innerHTML = cardHTML;
+      
+      // إضافة مستمع قلب البطاقة
+      const cardInner = container.querySelector('.card-inner');
+      if (cardInner) {
+        cardInner.addEventListener('click', function(e) {
+          // لا نقلب إذا كان الضغط على زر (لا يوجد أزرار داخلية)
+          this.classList.toggle('flipped');
+        });
+      }
+    }
+
+    // ========== إنشاء كود HTML لبطاقة واحدة ==========
+    function generateCardHTML(card) {
+      const lastFour = card.number.slice(-4);
+      const displayNumber = `**** **** **** ${lastFour}`;
+      
+      return `
+        <div class="main-visa-card">
+          <div class="card-inner">
+            <!-- الوجه الأمامي -->
+            <div class="card-front" style="background: ${card.backgroundFront}; color: ${card.textColor};">
+              <div class="card-chip" style="background: linear-gradient(135deg, ${card.chipColor}, ${card.chipColor}dd);"></div>
+              <div class="card-logo">
+                <div class="visa-logo" style="color: ${card.textColor};">VISA</div>
+                <div class="card-type" style="color: ${card.textColor};">${card.type}</div>
+              </div>
+              <div class="card-number" style="color: ${card.textColor};">${displayNumber}</div>
+              <div class="card-details">
+                <div class="card-holder">
+                  <div class="card-label" style="color: ${card.textColor};">حامل البطاقة</div>
+                  <div class="card-value" style="color: ${card.textColor};">${card.holder}</div>
+                </div>
+                <div class="card-expiry">
+                  <div class="card-label" style="color: ${card.textColor};">صالحة حتى</div>
+                  <div class="card-value" style="color: ${card.textColor};">${card.expiry}</div>
+                </div>
+              </div>
+              <div class="card-shine"></div>
+            </div>
+            <!-- الوجه الخلفي -->
+            <div class="card-back" style="background: ${card.backgroundBack}; color: ${card.textColor};">
+              <div class="magnetic-stripe"></div>
+              <div class="cvv-section">
+                <div class="cvv-label">رمز الأمان (CVV)</div>
+                <div class="cvv-number">${card.cvv}</div>
+              </div>
+              <div class="notice" style="color: ${card.textColor};">
+                توقيع حامل البطاقة مطلوب. غير صالحة ما لم تكن موقعة.
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ========== رسم نقاط التبويض ==========
+    function renderDots() {
+      const dotsContainer = document.getElementById('carouselDots');
+      if (!dotsContainer) return;
+      
+      let dotsHTML = '';
+      cardsData.forEach((_, index) => {
+        const activeClass = index === currentCardIndex ? 'active' : '';
+        dotsHTML += `<button class="dot ${activeClass}" data-index="${index}"></button>`;
+      });
+      dotsContainer.innerHTML = dotsHTML;
+      
+      // إضافة مستمع للنقر على النقاط
+      dotsContainer.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const index = parseInt(this.dataset.index);
+          if (!isNaN(index) && index !== currentCardIndex) {
+            currentCardIndex = index;
+            renderCarousel();
+            updateCardDetails();
+          }
+        });
+      });
+    }
+
+    // ========== تحديث قسم تفاصيل البطاقة حسب البطاقة الحالية ==========
+    function updateCardDetails() {
+      const card = cardsData[currentCardIndex];
+      document.getElementById('cardBalance').textContent = `$${card.balance.toFixed(2)}`;
+      document.getElementById('cardType').textContent = `Visa ${card.type}`;
+      document.getElementById('cardIssueDate').textContent = card.issueDate || '08/2023';
+      
+      const statusEl = document.getElementById('cardStatus');
+      if (card.status === 'pending') {
+        statusEl.innerHTML = '<i class="fas fa-hourglass-half"></i> قيد الانتظار';
+        statusEl.className = 'detail-value warning';
+      } else if (card.status === 'active') {
+        statusEl.innerHTML = '<i class="fas fa-check-circle"></i> نشطة';
+        statusEl.className = 'detail-value positive';
+      } else {
+        statusEl.innerHTML = '<i class="fas fa-ban"></i> مجمدة';
+        statusEl.className = 'detail-value warning';
+      }
+    }
+
+    // ========== إعداد جميع مستمعي الأحداث ==========
     function setupEventListeners() {
       // زر العودة
       document.getElementById('visaBackBtn').addEventListener('click', goBack);
       
-      // قلب البطاقة عند النقر
-      document.getElementById('cardFlip').addEventListener('click', flipCard);
-      
-      // إجراءات سريعة
+      // تجميد/إلغاء تجميد البطاقة الحالية
       document.getElementById('freezeCard').addEventListener('click', toggleFreezeCard);
+      
+      // عرض المعاملات
       document.getElementById('viewTransactions').addEventListener('click', viewAllTransactions);
       
-      // أزرار الإجراءات
+      // طلب بطاقة جديدة (تم تغيير النص فقط، الوظيفة كما هي)
       document.getElementById('requestNewCard').addEventListener('click', requestNewCard);
+      
+      // إدارة الحدود
       document.getElementById('manageLimits').addEventListener('click', manageLimits);
+      
+      // مستمعات السحب (touch + mouse)
+      const carouselContainer = document.getElementById('carouselContainer');
+      
+      // أحداث اللمس
+      carouselContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      
+      carouselContainer.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, { passive: true });
+      
+      // أحداث الفأرة (سحب بالماوس)
+      let isMouseDown = false;
+      carouselContainer.addEventListener('mousedown', (e) => {
+        isMouseDown = true;
+        touchStartX = e.screenX;
+        e.preventDefault(); // منع تحديد النص
+      });
+      
+      carouselContainer.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        touchEndX = e.screenX;
+      });
+      
+      carouselContainer.addEventListener('mouseup', (e) => {
+        if (isMouseDown) {
+          touchEndX = e.screenX;
+          handleSwipe();
+          isMouseDown = false;
+        }
+      });
+      
+      carouselContainer.addEventListener('mouseleave', () => {
+        isMouseDown = false;
+      });
     }
 
-    // ========== دوال المساعدة ==========
-    function formatCardNumber(number) {
-      // إظهار الأرقام الأربعة الأخيرة فقط
-      const lastFour = number.slice(-4);
-      return `**** **** **** ${lastFour}`;
+    // ========== معالجة السحب (التنبؤ باليمين/اليسار) ==========
+    function handleSwipe() {
+      const diff = touchStartX - touchEndX;
+      
+      if (Math.abs(diff) < SWIPE_THRESHOLD) return;
+      
+      if (diff > 0) {
+        // سحب لليسار ← البطاقة التالية
+        if (currentCardIndex < cardsData.length - 1) {
+          currentCardIndex++;
+        } else {
+          // وصلنا إلى النهاية، نعرض رسالة
+          showToast('هذه آخر بطاقة', 'info');
+          return;
+        }
+      } else {
+        // سحب لليمين ← البطاقة السابقة
+        if (currentCardIndex > 0) {
+          currentCardIndex--;
+        } else {
+          showToast('هذه أول بطاقة', 'info');
+          return;
+        }
+      }
+      
+      // إعادة رسم الكاروسيل والنقاط وتفاصيل البطاقة
+      renderCarousel();
+      updateCardDetails();
     }
 
+    // ========== تبديل حالة التجميد للبطاقة الحالية ==========
+    function toggleFreezeCard() {
+      const card = cardsData[currentCardIndex];
+      const freezeBtn = document.getElementById('freezeCard');
+      const icon = freezeBtn.querySelector('.action-icon');
+      const text = freezeBtn.querySelector('.action-text');
+      
+      if (card.status === 'active' || card.status === 'pending') { // نسمح بتجميد حتى لو pending (بدون تغيير في السلوك)
+        // تجميد
+        card.status = 'frozen';
+        // تغيير مظهر البطاقة (درجة رمادية)
+        card.backgroundFront = 'linear-gradient(135deg, #6b7b8f, #4a5a6a)';
+        card.backgroundBack = 'linear-gradient(135deg, #4a5a6a, #6b7b8f)';
+        icon.style.background = 'linear-gradient(135deg, var(--danger), #ff6b81)';
+        icon.innerHTML = '<i class="fas fa-ban"></i>';
+        text.textContent = 'إلغاء التجميد';
+        showToast('تم تجميد البطاقة', 'warning');
+      } else {
+        // إلغاء التجميد - استعادة التدرج الأصلي حسب نوع البطاقة
+        card.status = 'pending'; // نعيدها إلى pending كما كانت
+        // استرجاع الألوان الأصلية من template
+        const original = getOriginalCardStyle(card.id);
+        card.backgroundFront = original.backgroundFront;
+        card.backgroundBack = original.backgroundBack;
+        card.chipColor = original.chipColor;
+        card.textColor = original.textColor;
+        icon.style.background = 'linear-gradient(135deg, var(--warning), #ffb347)';
+        icon.innerHTML = '<i class="fas fa-snowflake"></i>';
+        text.textContent = 'تجميد البطاقة';
+        showToast('تم إلغاء تجميد البطاقة', 'success');
+      }
+      
+      // إعادة رسم البطاقة وتحديث التفاصيل
+      renderCurrentCard();
+      updateCardDetails();
+    }
+
+    // ========== الحصول على الألوان الأصلية للبطاقة (للرجوع بعد التجميد) ==========
+    function getOriginalCardStyle(cardId) {
+      const originals = {
+        'visa_platinum_main': {
+          backgroundFront: 'linear-gradient(135deg, #1a1f71, #3a3fb3)',
+          backgroundBack: 'linear-gradient(135deg, #3a3fb3, #1a1f71)',
+          textColor: 'white',
+          chipColor: '#f0b90b'
+        },
+        'visa_gold': {
+          backgroundFront: 'linear-gradient(135deg, #f0b90b, #ffd700)',
+          backgroundBack: 'linear-gradient(135deg, #ffd700, #f0b90b)',
+          textColor: '#333',
+          chipColor: '#b8860b'
+        },
+        'visa_virtual': {
+          backgroundFront: 'linear-gradient(135deg, #26a17b, #2dcc9e)',
+          backgroundBack: 'linear-gradient(135deg, #2dcc9e, #26a17b)',
+          textColor: 'white',
+          chipColor: '#f0b90b'
+        },
+        'visa_platinum_extra': {
+          backgroundFront: 'linear-gradient(135deg, #e5e4e2, #ffffff)',
+          backgroundBack: 'linear-gradient(135deg, #ffffff, #e5e4e2)',
+          textColor: '#333',
+          chipColor: '#b0b0b0'
+        }
+      };
+      return originals[cardId] || originals['visa_platinum_main'];
+    }
+
+    // ========== عرض جميع المعاملات ==========
+    function viewAllTransactions() {
+      showLoading(true);
+      setTimeout(() => {
+        showLoading(false);
+        showToast('جارٍ تحميل جميع المعاملات...', 'info');
+      }, 1000);
+    }
+
+    // ========== طلب بطاقة جديدة ==========
+    function requestNewCard() {
+      showLoading(true);
+      setTimeout(() => {
+        showLoading(false);
+        // تعديل الرسالة لتتناسب مع النص الجديد
+        showToast('البطاقات قيد التفعيل قريباً، تابعنا!', 'success');
+      }, 2000);
+    }
+
+    // ========== إدارة الحدود ==========
+    function manageLimits() {
+      showToast('فتح صفحة إدارة حدود الإنفاق...', 'info');
+    }
+
+    // ========== العودة ==========
+    function goBack() {
+      if (typeof showMainPage !== 'undefined') {
+        showMainPage();
+      } else {
+        window.history.back();
+      }
+    }
+
+    // ========== إظهار / إخفاء شاشة التحميل ==========
+    function showLoading(show) {
+      const spinner = document.getElementById('loadingSpinner');
+      if (spinner) {
+        spinner.style.display = show ? 'flex' : 'none';
+      }
+    }
+
+    // ========== عرض رسالة Toast ==========
     function showToast(message, type = 'info') {
       const existingToasts = document.querySelectorAll('.visa-toast');
       existingToasts.forEach(toast => toast.remove());
@@ -1002,7 +1169,6 @@
       const toast = document.createElement('div');
       toast.className = `visa-toast ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : ''}`;
       toast.textContent = message;
-      
       document.body.appendChild(toast);
       
       setTimeout(() => {
@@ -1018,113 +1184,18 @@
       }, 3000);
     }
 
-    function showLoading(show) {
-      const spinner = document.getElementById('loadingSpinner');
-      if (spinner) {
-        spinner.style.display = show ? 'flex' : 'none';
-      }
-    }
-
-    // ========== دوال التفاعل مع البطاقة ==========
-    function flipCard() {
-      const cardInner = document.getElementById('cardFlip');
-      cardInner.classList.toggle('flipped');
-    }
-
-    function toggleFreezeCard() {
-      const freezeBtn = document.getElementById('freezeCard');
-      const icon = freezeBtn.querySelector('.action-icon');
-      const text = freezeBtn.querySelector('.action-text');
-      
-      if (visaCard.status === 'active') {
-        visaCard.status = 'frozen';
-        icon.style.background = 'linear-gradient(135deg, var(--danger), #ff6b81)';
-        icon.innerHTML = '<i class="fas fa-ban"></i>';
-        text.textContent = 'إلغاء التجميد';
-        
-        showToast('تم تجميد البطاقة بنجاح', 'warning');
-      } else {
-        visaCard.status = 'active';
-        icon.style.background = 'linear-gradient(135deg, var(--warning), #ffb347)';
-        icon.innerHTML = '<i class="fas fa-snowflake"></i>';
-        text.textContent = 'تجميد البطاقة';
-        
-        showToast('تم إلغاء تجميد البطاقة', 'success');
-      }
-    }
-
-    function viewAllTransactions() {
-      showLoading(true);
-      
-      // محاكاة تحميل جميع المعاملات
-      setTimeout(() => {
-        showLoading(false);
-        showToast('جارٍ تحميل جميع المعاملات...', 'info');
-      }, 1000);
-    }
-
-    function requestNewCard() {
-      showLoading(true);
-      
-      // محاكاة طلب بطاقة جديدة
-      setTimeout(() => {
-        showLoading(false);
-        
-        const cardTypes = ['Gold', 'Platinum', 'Virtual'];
-        const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
-        
-        showToast(`تم تقديم طلب لبطاقة ${randomType} جديدة بنجاح!`, 'success');
-      }, 2000);
-    }
-
-    function manageLimits() {
-      showToast('فتح صفحة إدارة حدود الإنفاق...', 'info');
-    }
-
-    function goBack() {
-      // في حالة كون الصفحة جزءاً من تطبيق أكبر
-      if (typeof showMainPage !== 'undefined') {
-        showMainPage();
-      } else {
-        // في حالة الصفحة المستقلة، إعادة تحميل أو إغلاق
-        window.history.back();
-      }
-    }
-
-    // ========== تهيئة إضافية عند التمرير ==========
+    // ========== تأثير التلاشي ==========
     window.addEventListener('scroll', function() {
       const fadeElements = document.querySelectorAll('.fade-in');
-      
       fadeElements.forEach(element => {
         const elementTop = element.getBoundingClientRect().top;
         const elementVisible = 150;
-        
         if (elementTop < window.innerHeight - elementVisible) {
           element.style.opacity = "1";
           element.style.transform = "translateY(0)";
         }
       });
     });
-
-    // ========== تهيئة تأثيرات التلاشي ==========
-    document.querySelectorAll('.fade-in').forEach(element => {
-      element.style.opacity = "0";
-      element.style.transform = "translateY(20px)";
-      element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-    });
-
-    // تشغيل تأثير التلاشي بعد تحميل الصفحة
-    setTimeout(() => {
-      document.querySelectorAll('.fade-in').forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        const elementVisible = 150;
-        
-        if (elementTop < window.innerHeight - elementVisible) {
-          element.style.opacity = "1";
-          element.style.transform = "translateY(0)";
-        }
-      });
-    }, 300);
   </script>
 </body>
 </html>
